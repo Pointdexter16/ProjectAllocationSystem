@@ -1,13 +1,16 @@
-# from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 # from sqlalchemy.orm import Session
 # from .. import models, schemas, database
 
-# router = APIRouter(
-#     prefix="/items",
-#     tags=["items"]
-# )
+router = APIRouter(
+    prefix="/items",
+    tags=["items"]
+)
+
+
 
 # @router.post("/", response_model=schemas.Item)
+@router.post("/")
 # def create_item(item: schemas.ItemCreate, db: Session = Depends(database.get_db)):
 #     db_item = models.Item(name=item.name, description=item.description)
 #     db.add(db_item)
