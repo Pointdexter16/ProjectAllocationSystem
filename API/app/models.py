@@ -5,10 +5,9 @@ from sqlalchemy import Column, Integer, String, Enum
 class User(Base):
     __tablename__ = 'users'
 
-    user_id = Column(Integer, primary_key=True, autoincrement=True)
+    staff_id = Column(Integer, nullable=False, primary_key=True)
     first_name = Column(String(255), nullable=False)
     last_name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
     password_hash = Column(String(255), nullable=False)
     role = Column(Enum('employee', 'manager'), nullable=False)
-    staff_id = Column(Integer, nullable=False, unique=True)
