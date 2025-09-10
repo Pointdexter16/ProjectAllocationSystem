@@ -35,7 +35,8 @@ CREATE TABLE projects_under_employee (
     StartDate DATE,
     EndDate DATE,
     Project_id INT,
-    staff_id INT
+    staff_id INT,
+    projectStatus ENUM('Not Started', 'In Progress', 'Completed')
 );
 
 DROP TABLE IF EXISTS projects;
@@ -45,6 +46,7 @@ CREATE TABLE projects (
     StartDate DATE,
     EndDate DATE,
     projectStatus ENUM('Not Started', 'In Progress', 'Completed'),
+    projectPriority ENUM('Low', 'Medium', 'High'),
     Budget INT,
     Manager VARCHAR(255)
 );  
