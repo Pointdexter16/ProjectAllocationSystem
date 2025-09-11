@@ -9,7 +9,6 @@ CREATE TABLE Employee (
     Staff_id INT PRIMARY KEY,
     Joining_date DATE NOT NULL,
     Job_role VARCHAR(100) NOT NULL,
-    Email VARCHAR(100) UNIQUE NOT NULL,
     EmployeeStatus VARCHAR(50) NOT NULL,
     Manager_id INT DEFAULT NULL
 );
@@ -34,7 +33,7 @@ CREATE TABLE projects (
 
 DROP TABLE IF EXISTS projects_under_employee;   
 CREATE TABLE projects_under_employee (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+	id INT AUTO_INCREMENT PRIMARY KEY,
     StartDate DATE,
     EndDate DATE,
     ProjectId INT,
@@ -46,9 +45,12 @@ CREATE TABLE projects_under_employee (
 
 DROP TABLE IF EXISTS project_members;
 CREATE TABLE project_members (
+	id INT AUTO_INCREMENT PRIMARY KEY,
     ProjectId INT,
     Staff_id INT,
-    AssignedDate DATE
+    AssignedDate DATE DEFAULT (CURRENT_DATE),
+    StartDate DATE,
+    EndDate DATE
 );
 
 DROP TABLE IF EXISTS users;
@@ -61,3 +63,28 @@ CREATE TABLE users (
     Password_hash VARCHAR(255) NOT NULL,
     Job_role ENUM('employee', 'manager') NOT NULL
 );
+
+SHOW TABLES;
+SHOW COLUMNS FROM users;
+SHOW COLUMNS FROM Employee;
+SHOW COLUMNS FROM Manager;
+SHOW COLUMNS FROM projects;
+SHOW COLUMNS FROM project_members;
+SHOW COLUMNS FROM projects_under_employee;
+
+
+SELECT * FROM users; 
+SELECT * FROM Employee;
+SELECT * FROM Manager;
+SELECT * FROM projects;
+SELECT * FROM project_members;
+SELECT * FROM projects_under_employee;
+
+
+TRUNCATE TABLE Employee;
+TRUNCATE TABLE Manager;
+TRUNCATE TABLE projects;
+TRUNCATE TABLE project_members;
+TRUNCATE TABLE projects_under_employee;
+TRUNCATE TABLE users;
+
