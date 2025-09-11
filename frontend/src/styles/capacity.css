@@ -1,0 +1,368 @@
+/* Capacity Dashboard Styles */
+.capacity-dashboard {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.capacity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  gap: 24px;
+}
+
+.capacity-header-content h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0 0 8px 0;
+}
+
+.capacity-header-content p {
+  font-size: 16px;
+  color: var(--gray-600);
+  margin: 0;
+}
+
+.capacity-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Key Metrics */
+.capacity-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.metric-card .card-content {
+  padding: 24px;
+}
+
+.metric-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-info h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-600);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+  line-height: 1;
+}
+
+.metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background-color: var(--gray-100);
+  border-radius: 12px;
+}
+
+/* Charts */
+.capacity-charts {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.chart-card .card-header {
+  padding: 24px 24px 0 24px;
+}
+
+.chart-card .card-content {
+  padding: 16px 24px 24px 24px;
+}
+
+/* Filters */
+.capacity-filters .card-content {
+  padding: 20px 24px;
+}
+
+.filters-row {
+  display: flex;
+  gap: 24px;
+  align-items: end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+/* Capacity Table */
+.capacity-list {
+  margin-bottom: 24px;
+}
+
+.capacity-list .card-header {
+  padding: 24px 24px 0 24px;
+}
+
+.capacity-list .card-content {
+  padding: 16px 0 0 0;
+}
+
+.capacity-table {
+  width: 100%;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 1fr 2fr;
+  gap: 16px;
+  padding: 16px 24px;
+  background-color: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-700);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 1fr 2fr;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--gray-100);
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background-color: var(--gray-50);
+}
+
+.table-row.overloaded {
+  border-left: 4px solid var(--danger-500);
+  background-color: var(--danger-50);
+}
+
+.table-row.high {
+  border-left: 4px solid var(--warning-500);
+  background-color: var(--warning-50);
+}
+
+.table-row.medium {
+  border-left: 4px solid var(--primary-500);
+  background-color: var(--primary-50);
+}
+
+.table-row.low {
+  border-left: 4px solid var(--success-500);
+  background-color: var(--success-50);
+}
+
+/* Employee Info */
+.col-employee .employee-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.col-employee .employee-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.col-employee h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0 0 2px 0;
+}
+
+.col-employee p {
+  font-size: 12px;
+  color: var(--gray-600);
+  margin: 0;
+}
+
+/* Capacity Info */
+.col-capacity .capacity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.col-capacity .capacity-info > span {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.col-capacity .available {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--gray-600);
+}
+
+/* Utilization */
+.col-utilization .utilization-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.utilization-bar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.utilization-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.col-utilization span {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Projects Summary */
+.col-projects .projects-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.project-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background-color: var(--gray-100);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.project-name {
+  font-weight: 500;
+  color: var(--gray-800);
+  flex: 1;
+  margin-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-hours {
+  font-weight: 600;
+  color: var(--primary-600);
+  flex-shrink: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .capacity-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .capacity-dashboard {
+    padding: 16px;
+  }
+
+  .capacity-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .capacity-metrics {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .filters-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .table-header,
+  .table-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .table-header {
+    display: none;
+  }
+
+  .table-row {
+    padding: 16px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .table-row > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  .table-row > div:last-child {
+    border-bottom: none;
+  }
+
+  .table-row > div::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gray-700);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .col-employee::before { content: 'Employee'; }
+  .col-department::before { content: 'Department'; }
+  .col-capacity::before { content: 'Capacity'; }
+  .col-utilization::before { content: 'Utilization'; }
+  .col-projects::before { content: 'Projects'; }
+}

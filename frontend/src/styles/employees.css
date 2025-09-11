@@ -1,0 +1,570 @@
+/* Employees Management Styles */
+.employees-management {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.employees-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.employees-header-content h1 {
+  margin-bottom: 8px;
+}
+
+/* Employee Stats */
+.employee-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.stat-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+}
+
+.stat-info h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-600);
+  margin: 0 0 4px 0;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.stat-icon {
+  background-color: var(--gray-50);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* Filters */
+.employees-filters {
+  margin-bottom: 24px;
+}
+
+.filters-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  align-items: center;
+  background-color: var(--gray-50);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--gray-400);
+}
+
+.search-input {
+  background: transparent !important;
+  border: none !important;
+  margin-left: 8px;
+  flex: 1;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 12px;
+}
+
+/* Employees Grid */
+.employees-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.employee-card {
+  transition: all 0.2s ease;
+}
+
+.employee-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.employee-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.employee-basic-info {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+}
+
+.employee-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 18px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.employee-avatar.large {
+  width: 64px;
+  height: 64px;
+  font-size: 24px;
+}
+
+.employee-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.employee-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0 0 4px 0;
+}
+
+.employee-role {
+  font-size: 14px;
+  color: var(--gray-600);
+  margin: 0 0 8px 0;
+}
+
+.employee-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.employee-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.skills-section h4,
+.projects-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0 0 8px 0;
+}
+
+.skills-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.skill-tag {
+  background-color: var(--primary-100);
+  color: var(--primary-700);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.skill-tag.large {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.skill-tag.more {
+  background-color: var(--gray-200);
+  color: var(--gray-600);
+}
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.project-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.project-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-900);
+}
+
+.project-role {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.project-item.more {
+  font-size: 12px;
+  color: var(--gray-500);
+  font-style: italic;
+}
+
+.employee-card-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gray-200);
+}
+
+/* Employee Modal */
+.employee-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.employee-modal-header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.employee-modal-info h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0 0 4px 0;
+}
+
+.employee-modal-info .role {
+  font-size: 16px;
+  color: var(--gray-600);
+  margin: 0 0 8px 0;
+}
+
+.employee-modal-info .badges {
+  display: flex;
+  gap: 8px;
+}
+
+.employee-modal-details {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.detail-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0 0 12px 0;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--gray-700);
+}
+
+.skills-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.projects-detailed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project-detailed {
+  padding: 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  background-color: var(--gray-50);
+}
+
+.project-detailed h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0 0 4px 0;
+}
+
+.project-detailed p {
+  font-size: 13px;
+  color: var(--gray-600);
+  margin: 0;
+}
+
+/* Capacity Section */
+.capacity-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0 0 8px 0;
+}
+
+.capacity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.capacity-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.capacity-label {
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
+.capacity-bar {
+  width: 100%;
+  height: 6px;
+  background-color: var(--gray-200);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.capacity-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.utilization-rate {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-700);
+  text-align: center;
+}
+
+/* Employee Form Styles */
+.employee-form-content {
+  padding: 0;
+}
+
+.employee-form {
+  padding: 24px;
+}
+
+.employee-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.employee-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.employee-form .form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+/* Dropdown Menu Styles */
+.dropdown-container {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  min-width: 160px;
+  padding: 4px 0;
+  margin-top: 4px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: var(--gray-50);
+}
+
+.dropdown-item.delete {
+  color: var(--danger-600);
+}
+
+.dropdown-item.delete:hover {
+  background-color: var(--danger-50);
+  color: var(--danger-700);
+}
+
+/* Delete Modal Styles */
+.delete-modal-content {
+  padding: 0;
+}
+
+.delete-modal-body {
+  padding: 24px;
+  text-align: center;
+}
+
+.delete-icon {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.delete-modal-body h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+}
+
+.delete-modal-body p {
+  color: var(--gray-600);
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .employees-management {
+    padding: 16px;
+  }
+  
+  .employees-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .employee-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .filters-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-box {
+    min-width: auto;
+  }
+  
+  .filter-controls {
+    justify-content: stretch;
+  }
+  
+  .filter-controls select {
+    flex: 1;
+  }
+  
+  .employees-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .employee-card-actions {
+    flex-direction: column;
+  }
+  
+  .employee-modal-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .employee-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-content {
+    padding: 4px;
+  }
+  
+  .employee-basic-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .contact-info {
+    align-items: center;
+  }
+}

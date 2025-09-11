@@ -1,0 +1,1144 @@
+import React, { useState, useEffect } from 'react';
+import '../../styles/projects.css';
+import { 
+  FolderOpen, 
+  Users, 
+  Calendar, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  UserPlus,
+  Search,
+  Filter,
+  MoreVertical
+} from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
+import Button from '../ui/Button';
+import Badge from '../ui/Badge';
+import Modal from '../ui/Modal';
+import Input from '../ui/Input';
+import Select from '../ui/Select';
+
+const ProjectsManagement = () => {
+  const [projects, setProjects] = useState([
+    {
+      id: 1,
+      name: 'E-commerce Platform',
+      description: 'Building a modern e-commerce platform with React and Node.js',
+      status: 'In Progress',
+      priority: 'high',
+      startDate: '2024-01-15',
+      endDate: '2024-04-15',
+      progress: 65,
+      budget: 50000,
+      manager: 'John Smith',
+      employees: [
+        { id: 1, name: 'Alice Johnson', role: 'Frontend Developer', avatar: 'AJ' },
+        { id: 2, name: 'Bob Wilson', role: 'Backend Developer', avatar: 'BW' },
+        { id: 3, name: 'Carol Davis', role: 'UI/UX Designer', avatar: 'CD' },
+        { id: 4, name: 'David Brown', role: 'QA Engineer', avatar: 'DB' },
+        { id: 5, name: 'Eva Martinez', role: 'DevOps Engineer', avatar: 'EM' }
+      ]
+    },
+    {
+      id: 2,
+      name: 'Mobile App Redesign',
+      description: 'Complete redesign of the mobile application with new features',
+      status: 'Planning',
+      priority: 'medium',
+      startDate: '2024-02-01',
+      endDate: '2024-05-01',
+      progress: 25,
+      budget: 30000,
+      manager: 'Sarah Connor',
+      employees: [
+        { id: 6, name: 'Frank Miller', role: 'Mobile Developer', avatar: 'FM' },
+        { id: 7, name: 'Grace Lee', role: 'UI/UX Designer', avatar: 'GL' },
+        { id: 8, name: 'Henry Taylor', role: 'Product Manager', avatar: 'HT' }
+      ]
+    },
+    {
+      id: 3,
+      name: 'Data Analytics Dashboard',
+      description: 'Advanced analytics dashboard for business intelligence',
+      status: 'In Progress',
+      priority: 'high',
+      startDate: '2024-01-01',
+      endDate: '2024-03-30',
+      progress: 80,
+      budget: 40000,
+      manager: 'Mike Johnson',
+      employees: [
+        { id: 9, name: 'Ivy Chen', role: 'Data Scientist', avatar: 'IC' },
+        { id: 10, name: 'Jack Robinson', role: 'Frontend Developer', avatar: 'JR' },
+        { id: 11, name: 'Kate Williams', role: 'Backend Developer', avatar: 'KW' }
+      ]
+    },
+    {
+      id: 4,
+      name: 'API Integration Platform',
+      description: 'Microservices architecture for third-party integrations',
+      status: 'Completed',
+      priority: 'medium',
+      startDate: '2023-10-01',
+      endDate: '2024-01-15',
+      progress: 100,
+      budget: 35000,
+      manager: 'Lisa Anderson',
+      employees: [
+        { id: 12, name: 'Leo Garcia', role: 'Backend Developer', avatar: 'LG' },
+        { id: 13, name: 'Mia Thompson', role: 'DevOps Engineer', avatar: 'MT' }
+      ]
+    }
+  ]);
+
+  const [employees, setEmployees] = useState([
+    { 
+      id: 1, 
+      name: 'Alice Johnson', 
+      role: 'Frontend Developer', 
+      department: 'Engineering', 
+      avatar: 'AJ',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 32, availableHours: 8, utilizationRate: 80 },
+      currentProjects: []
+    },
+    { 
+      id: 2, 
+      name: 'Bob Wilson', 
+      role: 'Backend Developer', 
+      department: 'Engineering', 
+      avatar: 'BW',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 25, availableHours: 15, utilizationRate: 62.5 },
+      currentProjects: []
+    },
+    { 
+      id: 3, 
+      name: 'Carol Davis', 
+      role: 'UI/UX Designer', 
+      department: 'Design', 
+      avatar: 'CD',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 38, availableHours: 2, utilizationRate: 95 },
+      currentProjects: []
+    },
+    { 
+      id: 4, 
+      name: 'David Brown', 
+      role: 'QA Engineer', 
+      department: 'Quality', 
+      avatar: 'DB',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 15, availableHours: 25, utilizationRate: 37.5 },
+      currentProjects: []
+    },
+    { 
+      id: 5, 
+      name: 'Eva Martinez', 
+      role: 'DevOps Engineer', 
+      department: 'Engineering', 
+      avatar: 'EM',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 30, availableHours: 10, utilizationRate: 75 },
+      currentProjects: []
+    },
+    { 
+      id: 6, 
+      name: 'Frank Miller', 
+      role: 'Mobile Developer', 
+      department: 'Engineering', 
+      avatar: 'FM',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 35, availableHours: 5, utilizationRate: 87.5 },
+      currentProjects: []
+    },
+    { 
+      id: 7, 
+      name: 'Grace Lee', 
+      role: 'UI/UX Designer', 
+      department: 'Design', 
+      avatar: 'GL',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 20, availableHours: 20, utilizationRate: 50 },
+      currentProjects: []
+    },
+    { 
+      id: 8, 
+      name: 'Henry Taylor', 
+      role: 'Product Manager', 
+      department: 'Product', 
+      avatar: 'HT',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 20, availableHours: 20, utilizationRate: 50 },
+      currentProjects: []
+    },
+    { 
+      id: 9, 
+      name: 'Ivy Chen', 
+      role: 'Data Scientist', 
+      department: 'Analytics', 
+      avatar: 'IC',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 28, availableHours: 12, utilizationRate: 70 },
+      currentProjects: []
+    },
+    { 
+      id: 10, 
+      name: 'Jack Robinson', 
+      role: 'Frontend Developer', 
+      department: 'Engineering', 
+      avatar: 'JR',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 24, availableHours: 16, utilizationRate: 60 },
+      currentProjects: []
+    },
+    { 
+      id: 11, 
+      name: 'Kate Williams', 
+      role: 'Backend Developer', 
+      department: 'Engineering', 
+      avatar: 'KW',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 32, availableHours: 8, utilizationRate: 80 },
+      currentProjects: []
+    },
+    { 
+      id: 12, 
+      name: 'Leo Garcia', 
+      role: 'Backend Developer', 
+      department: 'Engineering', 
+      avatar: 'LG',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 16, availableHours: 24, utilizationRate: 40 },
+      currentProjects: []
+    },
+    { 
+      id: 13, 
+      name: 'Mia Thompson', 
+      role: 'DevOps Engineer', 
+      department: 'Engineering', 
+      avatar: 'MT',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 22, availableHours: 18, utilizationRate: 55 },
+      currentProjects: []
+    },
+    { 
+      id: 14, 
+      name: 'Noah Davis', 
+      role: 'Frontend Developer', 
+      department: 'Engineering', 
+      avatar: 'ND',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 18, availableHours: 22, utilizationRate: 45 },
+      currentProjects: []
+    },
+    { 
+      id: 15, 
+      name: 'Olivia Wilson', 
+      role: 'Product Designer', 
+      department: 'Design', 
+      avatar: 'OW',
+      status: 'active',
+      capacity: { totalHours: 40, allocatedHours: 26, availableHours: 14, utilizationRate: 65 },
+      currentProjects: []
+    }
+  ]);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showEmployeesModal, setShowEmployeesModal] = useState(false);
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [newProject, setNewProject] = useState({
+    name: '',
+    description: '',
+    status: 'Planning',
+    priority: 'medium',
+    startDate: '',
+    endDate: '',
+    budget: '',
+    manager: ''
+  });
+  const [showEditProjectModal, setShowEditProjectModal] = useState(false);
+  const [showDeleteProjectModal, setShowDeleteProjectModal] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+  const [deletingProject, setDeletingProject] = useState(null);
+  const [projectDropdownOpen, setProjectDropdownOpen] = useState(null);
+
+  const getStatusBadge = (status) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return 'success';
+      case 'in progress':
+        return 'default';
+      case 'planning':
+        return 'warning';
+      case 'on hold':
+        return 'secondary';
+      default:
+        return 'default';
+    }
+  };
+
+  const getPriorityBadge = (priority) => {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return 'danger';
+      case 'medium':
+        return 'warning';
+      case 'low':
+        return 'secondary';
+      default:
+        return 'default';
+    }
+  };
+
+  const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         project.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || project.status.toLowerCase() === statusFilter.toLowerCase();
+    const matchesPriority = priorityFilter === 'all' || project.priority.toLowerCase() === priorityFilter.toLowerCase();
+    
+    return matchesSearch && matchesStatus && matchesPriority;
+  });
+
+  const handleAssignEmployees = (projectId) => {
+    setSelectedProject(projects.find(p => p.id === projectId));
+    setSelectedEmployees(projects.find(p => p.id === projectId)?.employees.map(emp => emp.id) || []);
+    setShowAssignModal(true);
+  };
+
+  const getCapacityStatus = (employee) => {
+    if (!employee.capacity || typeof employee.capacity.utilizationRate !== 'number') {
+      return 'low'; // Default to low if capacity data is missing
+    }
+    if (employee.capacity.utilizationRate >= 95) return 'overloaded';
+    if (employee.capacity.utilizationRate >= 80) return 'high';
+    if (employee.capacity.utilizationRate >= 50) return 'medium';
+    return 'low';
+  };
+
+  const getCapacityColor = (status) => {
+    switch (status) {
+      case 'overloaded': return 'var(--danger-500)';
+      case 'high': return 'var(--warning-500)';
+      case 'medium': return 'var(--primary-500)';
+      case 'low': return 'var(--success-500)';
+      default: return 'var(--gray-400)';
+    }
+  };
+
+  const getCapacityLabel = (status) => {
+    switch (status) {
+      case 'overloaded': return 'Overloaded';
+      case 'high': return 'High Load';
+      case 'medium': return 'Medium Load';
+      case 'low': return 'Available';
+      default: return 'Unknown';
+    }
+  };
+
+  const updateEmployeeCapacity = (employeeId, projectId, allocatedHours, isAssigning = true) => {
+    setEmployees(prevEmployees => 
+      prevEmployees.map(emp => {
+        if (emp.id === employeeId) {
+          const currentAllocated = emp.capacity.allocatedHours;
+          const newAllocated = isAssigning 
+            ? currentAllocated + allocatedHours 
+            : Math.max(0, currentAllocated - allocatedHours);
+          const newAvailable = emp.capacity.totalHours - newAllocated;
+          const newUtilizationRate = Math.round((newAllocated / emp.capacity.totalHours) * 100);
+
+          // Update current projects
+          let updatedProjects = [...(emp.currentProjects || [])];
+          if (isAssigning) {
+            const projectExists = updatedProjects.find(p => p.id === projectId);
+            if (!projectExists) {
+              const project = projects.find(p => p.id === projectId);
+              updatedProjects.push({
+                id: projectId,
+                name: project?.name || 'Unknown Project',
+                role: emp.role,
+                allocatedHours: allocatedHours
+              });
+            }
+          } else {
+            updatedProjects = updatedProjects.filter(p => p.id !== projectId);
+          }
+
+          return {
+            ...emp,
+            capacity: {
+              ...emp.capacity,
+              allocatedHours: newAllocated,
+              availableHours: newAvailable,
+              utilizationRate: newUtilizationRate
+            },
+            currentProjects: updatedProjects
+          };
+        }
+        return emp;
+      })
+    );
+  };
+
+  const handleSaveAssignment = () => {
+    if (selectedProject) {
+      const previousEmployees = selectedProject.employees || [];
+      const newEmployees = employees.filter(emp => selectedEmployees.includes(emp.id));
+      
+      // Calculate hours to allocate (default 20 hours per employee for this project)
+      const defaultHoursPerProject = 20;
+
+      // Remove assignments for employees no longer selected
+      previousEmployees.forEach(prevEmp => {
+        if (!selectedEmployees.includes(prevEmp.id)) {
+          updateEmployeeCapacity(prevEmp.id, selectedProject.id, defaultHoursPerProject, false);
+        }
+      });
+
+      // Add assignments for newly selected employees
+      newEmployees.forEach(newEmp => {
+        const wasAlreadyAssigned = previousEmployees.some(prevEmp => prevEmp.id === newEmp.id);
+        if (!wasAlreadyAssigned) {
+          updateEmployeeCapacity(newEmp.id, selectedProject.id, defaultHoursPerProject, true);
+        }
+      });
+
+      const updatedProjects = projects.map(project => {
+        if (project.id === selectedProject.id) {
+          return { ...project, employees: newEmployees };
+        }
+        return project;
+      });
+      
+      setProjects(updatedProjects);
+      setShowAssignModal(false);
+      setSelectedProject(null);
+      setSelectedEmployees([]);
+    }
+  };
+
+  const handleShowEmployees = (project) => {
+    setSelectedProject(project);
+    setShowEmployeesModal(true);
+  };
+
+  const toggleEmployeeSelection = (employeeId) => {
+    setSelectedEmployees(prev => 
+      prev.includes(employeeId) 
+        ? prev.filter(id => id !== employeeId)
+        : [...prev, employeeId]
+    );
+  };
+
+  const handleCreateProject = () => {
+    setNewProject({
+      name: '',
+      description: '',
+      status: 'Planning',
+      priority: 'medium',
+      startDate: '',
+      endDate: '',
+      budget: '',
+      manager: ''
+    });
+    setSelectedEmployees([]);
+    setShowProjectModal(true);
+  };
+
+  const handleSaveNewProject = () => {
+    if (!newProject.name || !newProject.description) {
+      alert('Please fill in required fields (Name and Description)');
+      return;
+    }
+
+    const project = {
+      id: projects.length + 1,
+      name: newProject.name,
+      description: newProject.description,
+      status: newProject.status,
+      priority: newProject.priority,
+      startDate: newProject.startDate,
+      endDate: newProject.endDate,
+      progress: 0,
+      budget: parseFloat(newProject.budget) || 0,
+      manager: newProject.manager,
+      employees: employees.filter(emp => selectedEmployees.includes(emp.id))
+    };
+
+    setProjects([...projects, project]);
+    
+    // Update employee capacity for assigned employees
+    selectedEmployees.forEach(empId => {
+      updateEmployeeCapacity(empId, project.id, 20, true); // Default 20 hours allocation
+    });
+
+    setShowProjectModal(false);
+    setNewProject({
+      name: '',
+      description: '',
+      status: 'Planning',
+      priority: 'medium',
+      startDate: '',
+      endDate: '',
+      budget: '',
+      manager: ''
+    });
+    setSelectedEmployees([]);
+  };
+
+  const handleEditProject = (project) => {
+    setEditingProject({
+      ...project,
+      budget: project.budget?.toString() || ''
+    });
+    setSelectedEmployees(project.employees?.map(emp => emp.id) || []);
+    setShowEditProjectModal(true);
+    setProjectDropdownOpen(null);
+  };
+
+  const handleSaveEditProject = () => {
+    if (!editingProject.name || !editingProject.description) {
+      alert('Please fill in required fields (Name and Description)');
+      return;
+    }
+
+    const updatedProject = {
+      ...editingProject,
+      budget: parseFloat(editingProject.budget) || 0,
+      employees: employees.filter(emp => selectedEmployees.includes(emp.id))
+    };
+
+    setProjects(projects.map(p => p.id === editingProject.id ? updatedProject : p));
+    setShowEditProjectModal(false);
+    setEditingProject(null);
+    setSelectedEmployees([]);
+  };
+
+  const handleDeleteProject = (project) => {
+    setDeletingProject(project);
+    setShowDeleteProjectModal(true);
+    setProjectDropdownOpen(null);
+  };
+
+  const confirmDeleteProject = () => {
+    if (deletingProject) {
+      // Remove project assignments from employees
+      deletingProject.employees?.forEach(emp => {
+        updateEmployeeCapacity(emp.id, deletingProject.id, 20, false);
+      });
+      
+      setProjects(projects.filter(p => p.id !== deletingProject.id));
+      setShowDeleteProjectModal(false);
+      setDeletingProject(null);
+    }
+  };
+
+  const toggleProjectDropdown = (projectId) => {
+    setProjectDropdownOpen(projectDropdownOpen === projectId ? null : projectId);
+  };
+
+  return (
+    <div className="projects-management">
+      {/* Header */}
+      <div className="projects-header">
+        <div className="projects-header-content">
+          <h1 className="page-title">Projects Management</h1>
+          <p className="page-description">Manage all projects and assign team members</p>
+        </div>
+        <Button onClick={handleCreateProject}>
+          <Plus style={{ width: '16px', height: '16px', marginRight: '8px' }} />
+          New Project
+        </Button>
+      </div>
+
+      {/* Filters */}
+      <Card className="projects-filters">
+        <CardContent>
+          <div className="filters-row">
+            <div className="search-box">
+              <Search style={{ width: '16px', height: '16px' }} />
+              <Input
+                placeholder="Search projects..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+            </div>
+            <div className="filter-controls">
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">All Status</option>
+                <option value="planning">Planning</option>
+                <option value="in progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="on hold">On Hold</option>
+              </Select>
+              <Select
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
+              >
+                <option value="all">All Priority</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Projects Grid */}
+      <div className="projects-grid">
+        {filteredProjects.map((project) => (
+          <Card key={project.id} className="project-card">
+            <CardHeader>
+              <div className="project-card-header">
+                <div className="project-info">
+                  <CardTitle className="project-title">{project.name}</CardTitle>
+                  <div className="project-badges">
+                    <Badge variant={getStatusBadge(project.status)}>
+                      {project.status}
+                    </Badge>
+                    <Badge variant={getPriorityBadge(project.priority)}>
+                      {project.priority} priority
+                    </Badge>
+                  </div>
+                </div>
+                <div className="project-actions">
+                  <Button variant="ghost" size="sm">
+                    <MoreVertical style={{ width: '16px', height: '16px' }} />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="project-description">{project.description}</p>
+              
+              <div className="project-details">
+                <div className="project-meta">
+                  <div className="meta-item">
+                    <Calendar style={{ width: '14px', height: '14px' }} />
+                    <span>{new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}</span>
+                  </div>
+                  <div className="meta-item">
+                    <span className="budget">Budget: ${project.budget.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="progress-section">
+                  <div className="progress-header">
+                    <span>Progress</span>
+                    <span>{project.progress}%</span>
+                  </div>
+                  <div className="progress-bar">
+                    <div 
+                      className="progress-fill" 
+                      style={{ width: `${project.progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="team-section">
+                  <div className="team-header">
+                    <div className="team-info">
+                      <Users style={{ width: '16px', height: '16px' }} />
+                      <span>Team ({project.employees.length})</span>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleShowEmployees(project)}
+                    >
+                      View All
+                    </Button>
+                  </div>
+                  <div className="team-avatars">
+                    {project.employees.slice(0, 4).map((employee) => (
+                      <div key={employee.id} className="team-avatar" title={employee.name}>
+                        {employee.avatar}
+                      </div>
+                    ))}
+                    {project.employees.length > 4 && (
+                      <div className="team-avatar more">
+                        +{project.employees.length - 4}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="project-card-actions">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleAssignEmployees(project.id)}
+                  >
+                    <UserPlus style={{ width: '14px', height: '14px', marginRight: '4px' }} />
+                    Assign Team
+                  </Button>
+                  <div className="dropdown-container">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => toggleProjectDropdown(project.id)}
+                      className="dropdown-trigger"
+                    >
+                      <MoreVertical style={{ width: '16px', height: '16px' }} />
+                    </Button>
+                    {projectDropdownOpen === project.id && (
+                      <div className="dropdown-menu">
+                        <button 
+                          className="dropdown-item"
+                          onClick={() => handleEditProject(project)}
+                        >
+                          <Edit style={{ width: '14px', height: '14px' }} />
+                          Edit Project
+                        </button>
+                        <button 
+                          className="dropdown-item delete"
+                          onClick={() => handleDeleteProject(project)}
+                        >
+                          <Trash2 style={{ width: '14px', height: '14px' }} />
+                          Delete Project
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* New Project Modal */}
+      <Modal
+        isOpen={showProjectModal}
+        onClose={() => setShowProjectModal(false)}
+        title="Create New Project"
+        size="lg"
+      >
+        <div className="project-modal-content">
+          <div className="project-form">
+            <div className="form-row">
+              <div className="form-group">
+                <label>Project Name *</label>
+                <Input
+                  value={newProject.name}
+                  onChange={(e) => setNewProject({...newProject, name: e.target.value})}
+                  placeholder="Enter project name"
+                />
+              </div>
+              <div className="form-group">
+                <label>Manager</label>
+                <Input
+                  value={newProject.manager}
+                  onChange={(e) => setNewProject({...newProject, manager: e.target.value})}
+                  placeholder="Project manager name"
+                />
+              </div>
+            </div>
+            
+            <div className="form-group">
+              <label>Description *</label>
+              <textarea
+                className="form-textarea"
+                value={newProject.description}
+                onChange={(e) => setNewProject({...newProject, description: e.target.value})}
+                placeholder="Project description"
+                rows="3"
+              />
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Status</label>
+                <Select
+                  value={newProject.status}
+                  onChange={(e) => setNewProject({...newProject, status: e.target.value})}
+                >
+                  <option value="Planning">Planning</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="On Hold">On Hold</option>
+                  <option value="Completed">Completed</option>
+                </Select>
+              </div>
+              <div className="form-group">
+                <label>Priority</label>
+                <Select
+                  value={newProject.priority}
+                  onChange={(e) => setNewProject({...newProject, priority: e.target.value})}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </Select>
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Start Date</label>
+                <Input
+                  type="date"
+                  value={newProject.startDate}
+                  onChange={(e) => setNewProject({...newProject, startDate: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label>End Date</label>
+                <Input
+                  type="date"
+                  value={newProject.endDate}
+                  onChange={(e) => setNewProject({...newProject, endDate: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Budget ($)</label>
+              <Input
+                type="number"
+                value={newProject.budget}
+                onChange={(e) => setNewProject({...newProject, budget: e.target.value})}
+                placeholder="Project budget"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Assign Team Members</label>
+              <div className="employees-assignment">
+                {employees.map((employee) => {
+                  const capacityStatus = getCapacityStatus(employee);
+                  return (
+                    <div key={employee.id} className={`employee-item ${capacityStatus}`}>
+                      <div className="employee-info">
+                        <div className="employee-avatar">{employee.avatar}</div>
+                        <div className="employee-details">
+                          <h4>{employee.name}</h4>
+                          <p>{employee.role} • {employee.department}</p>
+                          <div className="capacity-indicator">
+                            <div className="capacity-bar-small">
+                              <div 
+                                className="capacity-fill-small" 
+                                style={{ 
+                                  width: `${employee.capacity?.utilizationRate || 0}%`,
+                                  backgroundColor: getCapacityColor(capacityStatus)
+                                }}
+                              ></div>
+                            </div>
+                            <span className="capacity-text" style={{ color: getCapacityColor(capacityStatus) }}>
+                              {employee.capacity?.utilizationRate || 0}% - {getCapacityLabel(capacityStatus)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={selectedEmployees.includes(employee.id)}
+                        onChange={() => toggleEmployeeSelection(employee.id)}
+                        className="employee-checkbox"
+                        disabled={employee.status !== 'active'}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          
+          <div className="modal-actions">
+            <Button variant="outline" onClick={() => setShowProjectModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveNewProject}>
+              Create Project
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Employee Assignment Modal */}
+      <Modal
+        isOpen={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        title={`Assign Team - ${selectedProject?.name}`}
+        size="lg"
+      >
+        <div className="assign-modal-content">
+          <p className="assign-modal-description">
+            Select employees to assign to this project. Check their capacity before assigning:
+          </p>
+          <div className="employees-list">
+            {employees.map((employee) => {
+              const capacityStatus = getCapacityStatus(employee);
+              return (
+                <div key={employee.id} className={`employee-item ${capacityStatus}`}>
+                  <div className="employee-info">
+                    <div className="employee-avatar">{employee.avatar}</div>
+                    <div className="employee-details">
+                      <h4>{employee.name}</h4>
+                      <p>{employee.role} • {employee.department}</p>
+                      <div className="capacity-indicator">
+                        <div className="capacity-bar-small">
+                          <div 
+                            className="capacity-fill-small" 
+                            style={{ 
+                              width: `${employee.capacity?.utilizationRate || 0}%`,
+                              backgroundColor: getCapacityColor(capacityStatus)
+                            }}
+                          ></div>
+                        </div>
+                        <span className="capacity-text" style={{ color: getCapacityColor(capacityStatus) }}>
+                          {employee.capacity?.utilizationRate || 0}% - {getCapacityLabel(capacityStatus)}
+                        </span>
+                      </div>
+                      <div className="capacity-details">
+                        <span>Available: {employee.capacity?.availableHours || 40}h/week</span>
+                        <span>Allocated: {employee.capacity?.allocatedHours || 0}h/week</span>
+                      </div>
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={selectedEmployees.includes(employee.id)}
+                    onChange={() => toggleEmployeeSelection(employee.id)}
+                    className="employee-checkbox"
+                    disabled={employee.status !== 'active'}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <div className="modal-actions">
+            <Button variant="outline" onClick={() => setShowAssignModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveAssignment}>
+              Save Assignment
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* View Employees Modal */}
+      <Modal
+        isOpen={showEmployeesModal}
+        onClose={() => setShowEmployeesModal(false)}
+        title={`Team Members - ${selectedProject?.name}`}
+        size="md"
+      >
+        <div className="employees-modal-content">
+          {selectedProject?.employees.length > 0 ? (
+            <div className="employees-grid">
+              {selectedProject.employees.map((employee) => (
+                <div key={employee.id} className="employee-card">
+                  <div className="employee-avatar large">{employee.avatar}</div>
+                  <div className="employee-info">
+                    <h4>{employee.name}</h4>
+                    <p>{employee.role}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <Users style={{ width: '48px', height: '48px', color: 'var(--gray-400)' }} />
+              <p>No team members assigned to this project yet.</p>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Edit Project Modal */}
+      <Modal
+        isOpen={showEditProjectModal}
+        onClose={() => setShowEditProjectModal(false)}
+        title="Edit Project"
+        size="lg"
+      >
+        {editingProject && (
+          <div className="project-modal-content">
+            <div className="project-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Project Name *</label>
+                  <Input
+                    value={editingProject.name}
+                    onChange={(e) => setEditingProject({...editingProject, name: e.target.value})}
+                    placeholder="Enter project name"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Manager</label>
+                  <Input
+                    value={editingProject.manager}
+                    onChange={(e) => setEditingProject({...editingProject, manager: e.target.value})}
+                    placeholder="Project manager name"
+                  />
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label>Description *</label>
+                <textarea
+                  className="form-textarea"
+                  value={editingProject.description}
+                  onChange={(e) => setEditingProject({...editingProject, description: e.target.value})}
+                  placeholder="Project description"
+                  rows="3"
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Status</label>
+                  <Select
+                    value={editingProject.status}
+                    onChange={(e) => setEditingProject({...editingProject, status: e.target.value})}
+                  >
+                    <option value="Planning">Planning</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="On Hold">On Hold</option>
+                    <option value="Completed">Completed</option>
+                  </Select>
+                </div>
+                <div className="form-group">
+                  <label>Priority</label>
+                  <Select
+                    value={editingProject.priority}
+                    onChange={(e) => setEditingProject({...editingProject, priority: e.target.value})}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Start Date</label>
+                  <Input
+                    type="date"
+                    value={editingProject.startDate}
+                    onChange={(e) => setEditingProject({...editingProject, startDate: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>End Date</label>
+                  <Input
+                    type="date"
+                    value={editingProject.endDate}
+                    onChange={(e) => setEditingProject({...editingProject, endDate: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Budget ($)</label>
+                <Input
+                  type="number"
+                  value={editingProject.budget}
+                  onChange={(e) => setEditingProject({...editingProject, budget: e.target.value})}
+                  placeholder="Project budget"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Assign Team Members</label>
+                <div className="employees-assignment">
+                  {employees.map((employee) => {
+                    const capacityStatus = getCapacityStatus(employee);
+                    return (
+                      <div key={employee.id} className={`employee-item ${capacityStatus}`}>
+                        <div className="employee-info">
+                          <div className="employee-avatar">{employee.avatar}</div>
+                          <div className="employee-details">
+                            <h4>{employee.name}</h4>
+                            <p>{employee.role} • {employee.department}</p>
+                            <div className="capacity-indicator">
+                              <div className="capacity-bar-small">
+                                <div 
+                                  className="capacity-fill-small" 
+                                  style={{ 
+                                    width: `${employee.capacity?.utilizationRate || 0}%`,
+                                    backgroundColor: getCapacityColor(capacityStatus)
+                                  }}
+                                ></div>
+                              </div>
+                              <span className="capacity-text" style={{ color: getCapacityColor(capacityStatus) }}>
+                                {employee.capacity?.utilizationRate || 0}% - {getCapacityLabel(capacityStatus)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={selectedEmployees.includes(employee.id)}
+                          onChange={() => toggleEmployeeSelection(employee.id)}
+                          className="employee-checkbox"
+                          disabled={employee.status !== 'active'}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-actions">
+              <Button variant="outline" onClick={() => setShowEditProjectModal(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveEditProject}>
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Project Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteProjectModal}
+        onClose={() => setShowDeleteProjectModal(false)}
+        title="Delete Project"
+        size="sm"
+      >
+        {deletingProject && (
+          <div className="delete-modal-content">
+            <div className="delete-modal-body">
+              <div className="delete-icon">
+                <Trash2 style={{ width: '48px', height: '48px', color: 'var(--danger-500)' }} />
+              </div>
+              <h3>Are you sure you want to delete this project?</h3>
+              <p>
+                This will permanently remove <strong>{deletingProject.name}</strong> and unassign all team members. 
+                This action cannot be undone.
+              </p>
+            </div>
+            
+            <div className="modal-actions">
+              <Button variant="outline" onClick={() => setShowDeleteProjectModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="danger" onClick={confirmDeleteProject}>
+                Delete Project
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+};
+
+export default ProjectsManagement;
