@@ -39,37 +39,6 @@ class Project(Base):
     Budget = Column(Integer)
     Manager = Column(String)
 
-# class OngoingProject(Base):
-#     __tablename__ = "ongoing_projects"
-
-#     Project_id = Column(Integer, primary_key=True, autoincrement=True)
-#     ProjectName = Column(String)
-#     StartDate = Column(Date)
-#     EndDate = Column(Date)
-#     projectStatus = Column(String, Enum('Not Started', 'In Progress', 'Completed'))
-#     Budget = Column(Integer)
-#     Manager = Column(String)
-#     ProgressPercentage = Column(Integer)
-#     LastUpdated = Column(Date)
-#     Issues = Column(String)
-#     TeamMembers = Column(String)    
-
-# class CompletedProject(Base):
-#     __tablename__ = "completed_projects"
-
-#     Project_id = Column(Integer, primary_key=True, autoincrement=True)
-#     ProjectName = Column(String)
-#     StartDate = Column(Date)
-#     EndDate = Column(Date)
-#     projectStatus = Column(String, Enum('Not Started', 'In Progress', 'Completed'))
-#     Budget = Column(Integer)
-#     Manager = Column(String)
-#     CompletionDate = Column(Date)
-#     Outcome = Column(String)
-#     LessonsLearned = Column(String)
-#     ClientFeedback = Column(String)
-#     TeamMembers = Column(String)   
-
 class ProjectMembers(Base):
     __tablename__ = "project_members"
 

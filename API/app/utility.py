@@ -1,4 +1,19 @@
 import bcrypt
+import jwt # remove if not in use check
+import datetime
+
+from fastapi import Depends, HTTPException, status, Request, Security
+from jose import jwt, JWTError, ExpiredSignatureError
+from sqlalchemy.orm import Session
+from app.database import get_db  # your DB dependency
+from app import models
+from fastapi.security import APIKeyHeader
+
+
+from app.config import SECRET_KEY, ALGORITHM
+
+
+api_key_header = APIKeyHeader(name="Authorization")
 
 def hash_password(password: str) -> str:
     """
@@ -31,3 +46,65 @@ def check_password(password: str, hashed_password: str) -> bool:
     """
     # Both the plain password and the stored hash must be encoded to bytes for comparison.
     return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+
+
+def generate_token(user_id: int, expires_minutes: int = 60) -> str:
+    """
+    Generates a JWT token for a user with an expiration time.
+    """
+    payload = {
+        "user_id": user_id,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=expires_minutes),
+        "iat": datetime.datetime.utcnow()
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    if isinstance(token, bytes):
+        token = token.decode('utf-8')  # for old pyjwt
+    return token
+
+
+def token_required(auth_header: str = Security(api_key_header), db: Session = Depends(get_db)):
+    # auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header missing"
+        )
+
+    parts = auth_header.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header must be: Bearer <token>"
+        )
+
+    token = parts[1]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("user_id")
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: user_id missing"
+            )
+
+        # Query DB for user
+        user = db.query(models.User).filter_by(staff_id=user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: user not found"
+            )
+        return user
+
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token expired"
+        )
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )

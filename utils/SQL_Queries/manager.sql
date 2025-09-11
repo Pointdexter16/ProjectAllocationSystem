@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS managers;
+
+CREATE TABLE managers (
+    staff_id INT AUTO_INCREMENT PRIMARY KEY
+);
