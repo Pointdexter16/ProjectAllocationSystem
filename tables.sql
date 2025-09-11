@@ -1,6 +1,9 @@
 CREATE DATABASE IF NOT EXISTS companydb;
 USE companydb;
 
+SET FOREIGN_KEY_CHECKS = 0;
+
+
 DROP TABLE IF EXISTS Employee;
 CREATE TABLE Employee (
     Staff_id INT PRIMARY KEY,
@@ -12,8 +15,8 @@ CREATE TABLE Employee (
     FOREIGN KEY (Manager_id) REFERENCES Employee(Staff_id) ON DELETE SET NULL
 );
 
-DROP TABLE IF EXISTS Managers;
-CREATE TABLE Manager (
+DROP TABLE IF EXISTS Manager;
+CREATE TABLE Manager(
     Staff_id INT NOT NULL,
     FOREIGN KEY (Staff_id) REFERENCES Employee(Staff_id)
 );
@@ -38,7 +41,8 @@ CREATE TABLE projects_under_employee (
     ProjectId INT,
     Staff_id INT,
     Project_status ENUM('Not Started', 'In Progress', 'Completed'),
-    FOREIGN KEY (Staff_id) REFERENCES Employee(Staff_id)
+    FOREIGN KEY (Staff_id) REFERENCES Employee(Staff_id),
+    FOREIGN KEY (ProjectId) REFERENCES projects(ProjectId)
 );
 
  
@@ -48,7 +52,8 @@ CREATE TABLE project_members (
     ProjectId INT,
     Staff_id INT,
     AssignedDate DATE,
-    FOREIGN KEY (ProjectId) REFERENCES projects(ProjectId)
+    FOREIGN KEY (ProjectId) REFERENCES projects(ProjectId),
+    FOREIGN KEY (staff_id) REFERENCES employee(staff_id)
 );
 
 DROP TABLE IF EXISTS users;
@@ -61,5 +66,4 @@ CREATE TABLE users (
     Password_hash VARCHAR(255) NOT NULL,
     Job_role ENUM('employee', 'manager') NOT NULL
 );
-
 
