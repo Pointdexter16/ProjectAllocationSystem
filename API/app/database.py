@@ -5,7 +5,7 @@ from sqlalchemy.orm import  sessionmaker
 # This example uses SQLite, which is a file-based database and doesn't require a separate server.
 # For a MySQL database, you would use a connection string like:
 # 'mysql+pymysql://user:password@host/company_db'
-engine = create_engine('mysql+pymysql://root:demo@localhost/company_db')
+engine = create_engine('mysql+pymysql://root:demo@localhost/companydb')
 
 
 

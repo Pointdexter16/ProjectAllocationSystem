@@ -90,7 +90,7 @@ def token_required(auth_header: str = Security(api_key_header), db: Session = De
             )
 
         # Query DB for user
-        user = db.query(models.User).filter_by(staff_id=user_id).first()
+        user = db.query(models.Users).filter_by(Staff_id=user_id).first()
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
