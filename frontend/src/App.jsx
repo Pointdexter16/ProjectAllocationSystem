@@ -175,17 +175,34 @@ function App() {
               <Route path="dashboard" element={<DashboardRouter />} />
               
               {/* Admin Routes */}
-              <Route path="employees" element={
+              {/* <Route path="my-tasks" element={
+                <ProtectedRoute requiredRole="manager">
+                  <MyTasksPage />
+                </ProtectedRoute>
+              } /> */}
+              {/* <Route path="my-projects" element={
+                <ProtectedRoute requiredRole="manager">
+                  <MyProjectsPage />
+                </ProtectedRoute>
+              } /> */}
+
+              <Route path="profile" element={
+                <ProtectedRoute requiredRole="manager">
+                  <ProfilePage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="my-tasks" element={
                 <ProtectedRoute requiredRole="manager">
                   <EmployeesPage />
                 </ProtectedRoute>
               } />
-              <Route path="projects" element={
+              <Route path="my-projects" element={
                 <ProtectedRoute requiredRole="manager">
                   <ProjectsPage />
                 </ProtectedRoute>
               } />
-              <Route path="tasks" element={
+              <Route path="my-tasks" element={
                 <ProtectedRoute requiredRole="manager">
                   <TasksPage />
                 </ProtectedRoute>
@@ -210,33 +227,20 @@ function App() {
                   <SettingsPage />
                 </ProtectedRoute>
               } />
-              
+               
               {/* Employee Routes */}
-              <Route path="my-tasks" element={
-                <ProtectedRoute requiredRole="employee">
-                  <MyTasksPage />
-                </ProtectedRoute>
-              } />
-              <Route path="my-projects" element={
-                <ProtectedRoute requiredRole="employee">
-                  <MyProjectsPage />
-                </ProtectedRoute>
-              } />
-              <Route path="schedule" element={
-                <ProtectedRoute requiredRole="employee">
+              
+              {/* <Route path="schedule" element={
+                <ProtectedRoute requiredRole="manager">
                   <SchedulePage />
                 </ProtectedRoute>
               } />
               <Route path="timesheet" element={
-                <ProtectedRoute requiredRole="employee">
+                <ProtectedRoute requiredRole="manager">
                   <TimesheetPage />
                 </ProtectedRoute>
-              } />
-              <Route path="profile" element={
-                <ProtectedRoute requiredRole="employee">
-                  <ProfilePage />
-                </ProtectedRoute>
-              } />
+              } /> */}
+              
             </Route>
             
             {/* 404 Route */}

@@ -122,10 +122,10 @@ const AdminDashboard = () => {
                 <Users style={{ width: '24px', height: '24px' }} />
               </div>
             </div>
-            <div className="stat-trend">
+            {/* <div className="stat-trend">
               <TrendingUp style={{ width: '16px', height: '16px', color: 'var(--success-500)', marginRight: '4px' }} />
               <span className="trend-text trend-positive">+2 this month</span>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
 
@@ -140,14 +140,14 @@ const AdminDashboard = () => {
                 <FolderOpen style={{ width: '24px', height: '24px' }} />
               </div>
             </div>
-            <div className="stat-trend">
+            {/* <div className="stat-trend">
               <TrendingUp style={{ width: '16px', height: '16px', color: 'var(--success-500)', marginRight: '4px' }} />
               <span className="trend-text trend-positive">+1 this week</span>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
 
-        <Card className="stat-card">
+        {/* <Card className="stat-card">
           <CardContent>
             <div className="stat-content">
               <div className="stat-info">
@@ -162,7 +162,7 @@ const AdminDashboard = () => {
               <span className="trend-text">{stats.pendingTasks} pending</span>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* <Card className="stat-card">
           <CardContent>
