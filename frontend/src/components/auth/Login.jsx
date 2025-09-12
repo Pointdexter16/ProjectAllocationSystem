@@ -12,6 +12,8 @@ const Login = () => {
     email: '',
     password: ''
   });
+
+  
   const [errors, setErrors] = useState({});
   
   const { login, loading } = useAuth();
@@ -57,9 +59,12 @@ const Login = () => {
     const result = await login(formData);
     
     if (result.success) {
-      toast.success('Login successful!');
-      navigate('/dashboard');
-    } else {
+    toast.success('Login successful!');
+    const user = JSON.parse(localStorage.getItem('user'));
+      navigate('/dashboard'); 
+    
+    }
+    else {
       toast.error(result.error || 'Login failed');
     }
   };

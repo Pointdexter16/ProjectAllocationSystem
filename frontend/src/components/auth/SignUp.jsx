@@ -14,7 +14,7 @@ const SignUp = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'employee',
+    role: '',
     staff_id: '', // Assuming you enter this manually or generate it elsewhere
   });
 
@@ -66,8 +66,14 @@ const SignUp = () => {
     const result = await register(payload);
     if (result.success) {
       toast.success('Account created successfully!');
-      navigate('/dashboard');
-    } else {
+      const user = JSON.parse(localStorage.getItem('user'));
+
+
+      if (result.success) {
+      navigate('/dashboard'); // redirect to dashboard
+    } 
+    }
+    else {
       toast.error(result.error);
     }
   };

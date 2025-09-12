@@ -16,19 +16,22 @@ import CapacityDashboard from './components/capacity/CapacityDashboard';
 
 // Dashboard Router Component
 const DashboardRouter = () => {
-  const { user } = useAuth();
-  
-  if (user?.role === 'admin') {
+  const { user, loading, isAuthenticated } = useAuth();
+
+  if (loading || !isAuthenticated) {
+    return <div className="loading-spinner">Loading...</div>; // or a skeleton/spinner
+  }
+
+  console.log("🧠 User in DashboardRouter:", user);
+
+  if (user?.role === 'manager') {
     return <AdminDashboard />;
-  } else {
+  } else if (user?.role === 'employee') {
     return <EmployeeDashboard />;
+  } else {
+    return <Navigate to="/unauthorized" />;
   }
 };
-
-// Lazy load components
-// const ProjectsManagement = React.lazy(() => import('./components/projects/ProjectsManagement'));
-// const EmployeesManagement = React.lazy(() => import('./components/employees/EmployeesManagement'));
-// const CapacityDashboard = React.lazy(() => import('./components/capacity/CapacityDashboard'));
 
 // Placeholder components for routes
 const EmployeesPage = () => {
@@ -173,37 +176,37 @@ function App() {
               
               {/* Admin Routes */}
               <Route path="employees" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="manager">
                   <EmployeesPage />
                 </ProtectedRoute>
               } />
               <Route path="projects" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="manager">
                   <ProjectsPage />
                 </ProtectedRoute>
               } />
               <Route path="tasks" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="manager">
                   <TasksPage />
                 </ProtectedRoute>
               } />
               <Route path="calendar" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="manager">
                   <CalendarPage />
                 </ProtectedRoute>
               } />
               <Route path="capacity" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="manager">
                   <CapacityPage />
                 </ProtectedRoute>
               } />
               <Route path="analytics" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="manager">
                   <AnalyticsPage />
                 </ProtectedRoute>
               } />
               <Route path="settings" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="manager">
                   <SettingsPage />
                 </ProtectedRoute>
               } />

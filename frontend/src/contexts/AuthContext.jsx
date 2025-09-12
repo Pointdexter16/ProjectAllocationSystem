@@ -10,32 +10,30 @@ const authReducer = (state, action) => {
       return { ...state, loading: true, error: null };
     case 'LOGIN_SUCCESS':
     case 'REGISTER_SUCCESS':
-      return { 
-        ...state, 
-        loading: false, 
-        user: action.payload.user, 
-        token: action.payload.token,
+      return {
+        ...state,
+        loading: false,
+        user: action.payload.user,
+        token: action.payload.token || null,
         isAuthenticated: true,
-        error: null 
+        error: null
       };
     case 'LOGIN_FAILURE':
     case 'REGISTER_FAILURE':
-      return { 
-        ...state, 
-        loading: false, 
-        error: action.payload, 
-        isAuthenticated: false 
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+        isAuthenticated: false
       };
     case 'LOGOUT':
-      return { 
-        ...state, 
-        user: null, 
-        token: null, 
+      return {
+        ...state,
+        user: null,
+        token: null,
         isAuthenticated: false,
-        error: null 
+        error: null
       };
-    case 'SET_LOADING':
-      return { ...state, loading: action.payload };
     default:
       return state;
   }
@@ -52,7 +50,7 @@ const initialState = {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Set up axios interceptor for token
+  // Set axios Authorization header when token changes
   useEffect(() => {
     if (state.token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
@@ -65,13 +63,13 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    
+
     if (token && userData) {
       try {
         const user = JSON.parse(userData);
-        dispatch({ 
-          type: 'LOGIN_SUCCESS', 
-          payload: { user, token } 
+        dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: { user, token }
         });
       } catch (error) {
         localStorage.removeItem('token');
@@ -80,98 +78,88 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // LOGIN
   const login = async (credentials) => {
     dispatch({ type: 'LOGIN_START' });
-    
+
     try {
       const response = await axios.post('http://localhost:8000/login/login_credentials', {
         email: credentials.email,
-        password: credentials.password
+        password: credentials.password,
       });
 
-      const { user, token } = response.data;
-      console.log(token);
-      console.log("User" + user);
-      
+      // const { user, token } = response.data;
+      const { token, email, first_name, last_name, role, staff_id } = response.data;
+
+      // Manually create a user object
+      const user = { email, first_name, last_name, role, staff_id };
+      console.log("User", user);
+
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      
-      dispatch({ 
-        type: 'LOGIN_SUCCESS', 
-        payload: { user, token } 
-      });
-      
+
+      dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
+
       return { success: true };
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed';
-      dispatch({ 
-        type: 'LOGIN_FAILURE', 
-        payload: errorMessage 
-      });
+      dispatch({ type: 'LOGIN_FAILURE', payload: errorMessage });
       return { success: false, error: errorMessage };
     }
   };
 
-  
   const register = async (credentials) => {
     dispatch({ type: 'REGISTER_START' });
     try {
-      const response = await axios.post('http://localhost:8000/login/create/employee', {
+      const endpoint = credentials.role === 'manager'
+        ? 'http://localhost:8000/login/create/manager'
+        : 'http://localhost:8000/login/create/employee';
+
+      const response = await axios.post(endpoint, {
         first_name: credentials.first_name,
         last_name: credentials.last_name,
         email: credentials.email,
         password: credentials.password,
         role: credentials.role,
         staff_id: credentials.staff_id,
-        // manager_id: credentials.manager_id,
-        // role_title: credentials.role_title,
-        joining_data: credentials.joining_data 
-          ? new Date(credentials.joining_data).toISOString() 
-          : new Date().toISOString(), // fallback to now if not provided
+        joining_data: credentials.joining_data
+          ? new Date(credentials.joining_data).toISOString()
+          : new Date().toISOString(),
         emp_status: 'active',
         manager_id: 1,
         role_title: 'manager',
       });
 
       const user = response.data;
-      const token = state.token; // Replace with real token if your API returns one
 
-      console.log("Register function");
-      console.log("User" + user);
-      console.log(token);
-      
-      localStorage.setItem('token', token);
+      // Usually, registration APIs don’t return a token,
+      // so token remains null or you might login automatically after registration.
+
       localStorage.setItem('user', JSON.stringify(user));
+      dispatch({ type: 'REGISTER_SUCCESS', payload: { user, token: null } });
 
-      dispatch({ type: 'REGISTER_SUCCESS', payload: { user, token } });
       return { success: true };
-    } 
-    
-    catch (error) {
+    } catch (error) {
       const errorMessage = error.response?.data?.message || 'Registration failed';
       dispatch({ type: 'REGISTER_FAILURE', payload: errorMessage });
       return { success: false, error: errorMessage };
     }
   };
 
-
-  // LOGOUT
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     dispatch({ type: 'LOGOUT' });
   };
 
-  const value = {
-    ...state,
-    login,
-    register,
-    logout
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        ...state,
+        login,
+        register,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
