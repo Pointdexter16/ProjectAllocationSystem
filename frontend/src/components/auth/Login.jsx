@@ -4,12 +4,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
-import { Building2, Mail, Lock } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    employeeId: '',
+    email: '',
     password: ''
   });
   const [errors, setErrors] = useState({});
@@ -35,8 +35,8 @@ const Login = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.employeeId) {
-      newErrors.employeeId = 'Employee ID is required';
+    if (!formData.email) {
+      newErrors.email = 'Employee ID is required';
     }
     
     if (!formData.password) {
@@ -60,23 +60,8 @@ const Login = () => {
       toast.success('Login successful!');
       navigate('/dashboard');
     } else {
-      toast.error(result.error);
+      toast.error(result.error || 'Login failed');
     }
-  };
-
-  const fillDemoCredentials = (role) => {
-    if (role === 'admin') {
-      setFormData({
-        employeeId: 'admin123',
-        password: 'admin123'
-      });
-    } else {
-      setFormData({
-        employeeId: 'emp123',
-        password: 'emp123'
-      });
-    }
-    setErrors({});
   };
 
   return (
@@ -103,12 +88,12 @@ const Login = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="login-form">
               <Input
-                label="Employee ID"
+                label="email"
                 type="text"
-                name="employeeId"
-                value={formData.employeeId}
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
-                error={errors.employeeId}
+                error={errors.email}
                 required
                 placeholder="Enter your employee ID"
               />
@@ -134,33 +119,9 @@ const Login = () => {
               </Button>
             </form>
 
-            <div className="login-demo">
-              <p className="login-demo-text">
-                Demo Credentials:
-              </p>
-              <div className="login-demo-buttons">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fillDemoCredentials('admin')}
-                  className="demo-btn"
-                >
-                  Admin Demo
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fillDemoCredentials('employee')}
-                  className="demo-btn"
-                >
-                  Employee Demo
-                </Button>
-              </div>
-            </div>
-
             <div className="login-signup-link">
               <p className="login-signup-text">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <button
                   type="button"
                   onClick={() => navigate('/signup')}
