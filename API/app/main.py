@@ -6,10 +6,25 @@ from .routes import user,admin
 # Create database tables
 # Base.metadata.create_all(bind=engine)
 
+origins = [
+    "http://localhost:5173",  # Vite dev server
+    "http://127.0.0.1:5173",  # Sometimes browsers resolve this way
+]
+
+
+
 app = FastAPI(
     title="FastAPI Boilerplate",
     description="A modular FastAPI project structure",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,            # Allow frontend origin
+    allow_credentials=True,
+    allow_methods=["*"],              # Allow all HTTP methods
+    allow_headers=["*"],              # Allow all headers
 )
 
 # Include routers

@@ -10,32 +10,30 @@ const authReducer = (state, action) => {
       return { ...state, loading: true, error: null };
     case 'LOGIN_SUCCESS':
     case 'REGISTER_SUCCESS':
-      return { 
-        ...state, 
-        loading: false, 
-        user: action.payload.user, 
-        token: action.payload.token,
+      return {
+        ...state,
+        loading: false,
+        user: action.payload.user,
+        token: action.payload.token || null,
         isAuthenticated: true,
-        error: null 
+        error: null
       };
     case 'LOGIN_FAILURE':
     case 'REGISTER_FAILURE':
-      return { 
-        ...state, 
-        loading: false, 
-        error: action.payload, 
-        isAuthenticated: false 
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+        isAuthenticated: false
       };
     case 'LOGOUT':
-      return { 
-        ...state, 
-        user: null, 
-        token: null, 
+      return {
+        ...state,
+        user: null,
+        token: null,
         isAuthenticated: false,
-        error: null 
+        error: null
       };
-    case 'SET_LOADING':
-      return { ...state, loading: action.payload };
     default:
       return state;
   }
@@ -52,7 +50,7 @@ const initialState = {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Set up axios interceptor for token
+  // Set axios Authorization header when token changes
   useEffect(() => {
     if (state.token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
@@ -61,17 +59,17 @@ export const AuthProvider = ({ children }) => {
     }
   }, [state.token]);
 
-  // Check if user is logged in on app start
+  // Restore session on app start
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    
+
     if (token && userData) {
       try {
         const user = JSON.parse(userData);
-        dispatch({ 
-          type: 'LOGIN_SUCCESS', 
-          payload: { user, token } 
+        dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: { user, token }
         });
       } catch (error) {
         localStorage.removeItem('token');
@@ -82,65 +80,67 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     dispatch({ type: 'LOGIN_START' });
-    
+
     try {
-      // Mock API call - replace with actual API endpoint
-  //     const response = await axios.post('http://localhost:5000/api/auth/login', {
-  //     employeeId: credentials.employeeId,
-  //     password: credentials.password
-  // });
-      const response = await mockLogin(credentials);
-      const { user, token } = response.data;
-      
+      const response = await axios.post('http://localhost:8000/login/login_credentials', {
+        email: credentials.email,
+        password: credentials.password,
+      });
+
+      // const { user, token } = response.data;
+      const { token, email, first_name, last_name, role, staff_id } = response.data;
+
+      // Manually create a user object
+      const user = { email, first_name, last_name, role, staff_id };
+      console.log("User", user);
+
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      
-      dispatch({ 
-        type: 'LOGIN_SUCCESS', 
-        payload: { user, token } 
-      });
-      
+
+      dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
+
       return { success: true };
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed';
-      dispatch({ 
-        type: 'LOGIN_FAILURE', 
-        payload: errorMessage 
-      });
+      dispatch({ type: 'LOGIN_FAILURE', payload: errorMessage });
       return { success: false, error: errorMessage };
     }
   };
 
   const register = async (credentials) => {
     dispatch({ type: 'REGISTER_START' });
-    
     try {
-      // Mock API call - replace with actual API endpoint
-      // const response = await axios.post('http://localhost:5000/api/auth/register', {
-      //   name: credentials.name,
-      //   email: credentials.email,
-      //   password: credentials.password,
-      //   role: credentials.role
-      // });
-      const response = await mockRegister(credentials);
-      
-      const { user, token } = response.data;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      dispatch({ 
-        type: 'REGISTER_SUCCESS', 
-        payload: { user, token } 
+      const endpoint = credentials.role === 'manager'
+        ? 'http://localhost:8000/login/create/manager'
+        : 'http://localhost:8000/login/create/employee';
+
+      const response = await axios.post(endpoint, {
+        first_name: credentials.first_name,
+        last_name: credentials.last_name,
+        email: credentials.email,
+        password: credentials.password,
+        role: credentials.role,
+        staff_id: credentials.staff_id,
+        joining_data: credentials.joining_data
+          ? new Date(credentials.joining_data).toISOString()
+          : new Date().toISOString(),
+        emp_status: 'active',
+        manager_id: 1,
+        role_title: 'manager',
       });
-      
+
+      const user = response.data;
+
+      // Usually, registration APIs don’t return a token,
+      // so token remains null or you might login automatically after registration.
+
+      localStorage.setItem('user', JSON.stringify(user));
+      dispatch({ type: 'REGISTER_SUCCESS', payload: { user, token: null } });
+
       return { success: true };
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Registration failed';
-      dispatch({ 
-        type: 'REGISTER_FAILURE', 
-        payload: errorMessage 
-      });
+      dispatch({ type: 'REGISTER_FAILURE', payload: errorMessage });
       return { success: false, error: errorMessage };
     }
   };
@@ -151,15 +151,15 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'LOGOUT' });
   };
 
-  const value = {
-    ...state,
-    login,
-    register,
-    logout
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        ...state,
+        login,
+        register,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -171,83 +171,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
-
-// Mock login function - replace with actual API call
-const mockLogin = async (credentials) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (credentials.employeeId === 'admin123' && credentials.password === 'admin123') {
-        resolve({
-          data: {
-            user: {
-              id: 1,
-              name: 'Admin User',
-              employeeId: 'admin123',
-              email: 'admin@company.com',
-              role: 'admin',
-              avatar: null
-            },
-            token: 'mock-jwt-token-admin'
-          }
-        });
-      } else if (credentials.employeeId === 'emp123' && credentials.password === 'emp123') {
-        resolve({
-          data: {
-            user: {
-              id: 2,
-              name: 'John Employee',
-              employeeId: 'emp123',
-              email: 'employee@company.com',
-              role: 'employee',
-              avatar: null,
-              skills: ['React', 'Node.js'],
-              team: 'Development',
-              weeklyCapacity: 40,
-              currentWorkload: 25
-            },
-            token: 'mock-jwt-token-employee'
-          }
-        });
-      } else {
-        reject({
-          response: {
-            data: {
-              message: 'Invalid employee ID or password'
-            }
-          }
-        });
-      }
-    }, 1000);
-  });
-};
-
-// Mock register function - replace with actual API call
-const mockRegister = async (credentials) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (credentials.email === 'newuser@company.com' && credentials.password === 'newuser123') {
-        resolve({
-          data: {
-            user: {
-              id: 3,
-              name: 'New User',
-              email: 'newuser@company.com',
-              role: 'employee',
-              avatar: null
-            },
-            token: 'mock-jwt-token-newuser'
-          }
-        });
-      } else {
-        reject({
-          response: {
-            data: {
-              message: 'Registration failed'
-            }
-          }
-        });
-      }
-    }, 1000);
-  });
 };

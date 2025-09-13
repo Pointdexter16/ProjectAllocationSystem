@@ -16,19 +16,22 @@ import CapacityDashboard from './components/capacity/CapacityDashboard';
 
 // Dashboard Router Component
 const DashboardRouter = () => {
-  const { user } = useAuth();
-  
-  if (user?.role === 'admin') {
+  const { user, loading, isAuthenticated } = useAuth();
+
+  if (loading || !isAuthenticated) {
+    return <div className="loading-spinner">Loading...</div>; // or a skeleton/spinner
+  }
+
+  console.log("🧠 User in DashboardRouter:", user);
+
+  if (user?.role === 'manager') {
     return <AdminDashboard />;
-  } else {
+  } else if (user?.role === 'employee') {
     return <EmployeeDashboard />;
+  } else {
+    return <Navigate to="/unauthorized" />;
   }
 };
-
-// Lazy load components
-// const ProjectsManagement = React.lazy(() => import('./components/projects/ProjectsManagement'));
-// const EmployeesManagement = React.lazy(() => import('./components/employees/EmployeesManagement'));
-// const CapacityDashboard = React.lazy(() => import('./components/capacity/CapacityDashboard'));
 
 // Placeholder components for routes
 const EmployeesPage = () => {
@@ -172,68 +175,72 @@ function App() {
               <Route path="dashboard" element={<DashboardRouter />} />
               
               {/* Admin Routes */}
-              <Route path="employees" element={
-                <ProtectedRoute requiredRole="admin">
+              {/* <Route path="my-tasks" element={
+                <ProtectedRoute requiredRole="manager">
+                  <MyTasksPage />
+                </ProtectedRoute>
+              } /> */}
+              {/* <Route path="my-projects" element={
+                <ProtectedRoute requiredRole="manager">
+                  <MyProjectsPage />
+                </ProtectedRoute>
+              } /> */}
+
+              <Route path="profile" element={
+                <ProtectedRoute requiredRole="manager">
+                  <ProfilePage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="my-tasks" element={
+                <ProtectedRoute requiredRole="manager">
                   <EmployeesPage />
                 </ProtectedRoute>
               } />
-              <Route path="projects" element={
-                <ProtectedRoute requiredRole="admin">
+              <Route path="my-projects" element={
+                <ProtectedRoute requiredRole="manager">
                   <ProjectsPage />
                 </ProtectedRoute>
               } />
-              <Route path="tasks" element={
-                <ProtectedRoute requiredRole="admin">
+              <Route path="my-tasks" element={
+                <ProtectedRoute requiredRole="manager">
                   <TasksPage />
                 </ProtectedRoute>
               } />
               <Route path="calendar" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="manager">
                   <CalendarPage />
                 </ProtectedRoute>
               } />
               <Route path="capacity" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="manager">
                   <CapacityPage />
                 </ProtectedRoute>
               } />
               <Route path="analytics" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="manager">
                   <AnalyticsPage />
                 </ProtectedRoute>
               } />
               <Route path="settings" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="manager">
                   <SettingsPage />
                 </ProtectedRoute>
               } />
-              
+               
               {/* Employee Routes */}
-              <Route path="my-tasks" element={
-                <ProtectedRoute requiredRole="employee">
-                  <MyTasksPage />
-                </ProtectedRoute>
-              } />
-              <Route path="my-projects" element={
-                <ProtectedRoute requiredRole="employee">
-                  <MyProjectsPage />
-                </ProtectedRoute>
-              } />
-              <Route path="schedule" element={
-                <ProtectedRoute requiredRole="employee">
+              
+              {/* <Route path="schedule" element={
+                <ProtectedRoute requiredRole="manager">
                   <SchedulePage />
                 </ProtectedRoute>
               } />
               <Route path="timesheet" element={
-                <ProtectedRoute requiredRole="employee">
+                <ProtectedRoute requiredRole="manager">
                   <TimesheetPage />
                 </ProtectedRoute>
-              } />
-              <Route path="profile" element={
-                <ProtectedRoute requiredRole="employee">
-                  <ProfilePage />
-                </ProtectedRoute>
-              } />
+              } /> */}
+              
             </Route>
             
             {/* 404 Route */}

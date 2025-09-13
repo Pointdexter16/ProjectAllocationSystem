@@ -9,15 +9,16 @@ import toast from 'react-hot-toast';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'employee'
+    role: '',
+    staff_id: '', // Assuming you enter this manually or generate it elsewhere
   });
+
   const [errors, setErrors] = useState({});
-  
   const { register, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -27,7 +28,6 @@ const SignUp = () => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -38,57 +38,42 @@ const SignUp = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!formData.firstName) {
-      newErrors.firstName = 'First name is required';
-    } else if (formData.firstName.length < 2) {
-      newErrors.firstName = 'First name must be at least 2 characters';
-    }
-    
-    if (!formData.lastName) {
-      newErrors.lastName = 'Last name is required';
-    } else if (formData.lastName.length < 2) {
-      newErrors.lastName = 'Last name must be at least 2 characters';
-    }
-    
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-    
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
+    if (!formData.first_name) newErrors.first_name = 'First name is required';
+    if (!formData.last_name) newErrors.last_name = 'Last name is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.password) newErrors.password = 'Password is required';
+    if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    
+    if (!formData.staff_id) newErrors.staff_id = 'Staff ID is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-    
-    const result = await register({
-      name: `${formData.firstName} ${formData.lastName}`,
+
+    const payload = {
+      first_name: formData.first_name,
+      last_name: formData.last_name,
       email: formData.email,
       password: formData.password,
-      role: formData.role
-    });
-    
+      role: formData.role,
+      staff_id: Number(formData.staff_id),
+    };
+
+    const result = await register(payload);
     if (result.success) {
       toast.success('Account created successfully!');
-      navigate('/dashboard');
-    } else {
+      const user = JSON.parse(localStorage.getItem('user'));
+
+
+      if (result.success) {
+      navigate('/dashboard'); // redirect to dashboard
+    } 
+    }
+    else {
       toast.error(result.error);
     }
   };
@@ -100,10 +85,6 @@ const SignUp = () => {
     }));
   };
 
-  const navigateToLogin = () => {
-    navigate('/login');
-  };
-
   return (
     <div className="login-page">
       <div className="login-container">
@@ -113,12 +94,8 @@ const SignUp = () => {
               <Building2 style={{ width: '32px', height: '32px', color: 'white' }} />
             </div>
           </div>
-          <h1 className="login-title">
-            Project Allocation System
-          </h1>
-          <p className="login-subtitle">
-            Create your account to get started
-          </p>
+          <h1 className="login-title">Project Allocation System</h1>
+          <p className="login-subtitle">Create your account to get started</p>
         </div>
 
         <Card>
@@ -126,7 +103,6 @@ const SignUp = () => {
             <CardTitle>Create Account</CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Role Selection */}
             <div className="role-selection">
               <p className="role-selection-label">Select Account Type:</p>
               <div className="role-buttons">
@@ -135,20 +111,16 @@ const SignUp = () => {
                   variant={formData.role === 'employee' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handleRoleChange('employee')}
-                  className="role-btn"
                 >
-                  <User className="w-4 h-4 mr-2" />
-                  Employee
+                  <User className="w-4 h-4 mr-2" /> Employee
                 </Button>
                 <Button
                   type="button"
-                  variant={formData.role === 'admin' ? 'default' : 'outline'}
+                  variant={formData.role === 'manager' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => handleRoleChange('admin')}
-                  className="role-btn"
+                  onClick={() => handleRoleChange('manager')}
                 >
-                  <UserCheck className="w-4 h-4 mr-2" />
-                  Admin
+                  <UserCheck className="w-4 h-4 mr-2" /> Manager
                 </Button>
               </div>
             </div>
@@ -156,24 +128,20 @@ const SignUp = () => {
             <form onSubmit={handleSubmit} className="login-form">
               <Input
                 label="First Name"
-                type="text"
-                name="firstName"
-                value={formData.firstName}
+                name="first_name"
+                value={formData.first_name}
                 onChange={handleChange}
-                error={errors.firstName}
+                error={errors.first_name}
                 required
-                placeholder="Enter your first name"
               />
 
               <Input
                 label="Last Name"
-                type="text"
-                name="lastName"
-                value={formData.lastName}
+                name="last_name"
+                value={formData.last_name}
                 onChange={handleChange}
-                error={errors.lastName}
+                error={errors.last_name}
                 required
-                placeholder="Enter your last name"
               />
 
               <Input
@@ -184,9 +152,8 @@ const SignUp = () => {
                 onChange={handleChange}
                 error={errors.email}
                 required
-                placeholder="Enter your email"
               />
-              
+
               <Input
                 label="Password"
                 type="password"
@@ -195,7 +162,6 @@ const SignUp = () => {
                 onChange={handleChange}
                 error={errors.password}
                 required
-                placeholder="Create a password"
               />
 
               <Input
@@ -206,27 +172,27 @@ const SignUp = () => {
                 onChange={handleChange}
                 error={errors.confirmPassword}
                 required
-                placeholder="Confirm your password"
               />
-              
-              <Button
-                type="submit"
-                className="w-full"
-                loading={loading}
-                disabled={loading}
-              >
-                {loading ? 'Creating Account...' : 'Create Account'}
+
+              <Input
+                label="Staff ID"
+                type="number"
+                name="staff_id"
+                value={formData.staff_id}
+                onChange={handleChange}
+                error={errors.staff_id}
+                required
+              />
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Creating...' : 'Create Account'}
               </Button>
             </form>
 
             <div className="signup-login-link">
-              <p className="signup-login-text">
+              <p>
                 Already have an account?{' '}
-                <button
-                  type="button"
-                  onClick={navigateToLogin}
-                  className="signup-login-btn"
-                >
+                <button onClick={() => navigate('/login')} className="signup-login-btn">
                   Sign In
                 </button>
               </p>
@@ -235,7 +201,7 @@ const SignUp = () => {
         </Card>
 
         <div className="login-footer">
-          <p> 2024 Project Allocation System. All rights reserved.</p>
+          <p>© 2024 Project Allocation System. All rights reserved.</p>
         </div>
       </div>
     </div>
