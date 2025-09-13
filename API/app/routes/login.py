@@ -25,7 +25,7 @@ async def create_user(user: Employee_schema, db: Session = Depends(get_db)):
         Last_name=user.last_name,   #control should be clean
         Email=user.email,           #api end point naming should be clean
         Password_hash=hashed_password,
-        Job_role=user.role,
+        Job_role="employee",
         Staff_id=user.staff_id,
     )
 
@@ -71,7 +71,7 @@ async def create_user(user: User_schema, db: Session = Depends(get_db)):
         Last_name=user.last_name,
         Email=user.email,
         Password_hash=hashed_password,
-        Job_role=user.role,
+        Job_role="manager",
         Staff_id=user.staff_id,
     )
 

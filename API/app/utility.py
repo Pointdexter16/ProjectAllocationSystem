@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db  # your DB dependency
 from app import models
 from fastapi.security import APIKeyHeader
+from app.models import Users
+from sqlalchemy.inspection import inspect
 
 
 from app.config import SECRET_KEY, ALGORITHM
@@ -108,3 +110,24 @@ def token_required(auth_header: str = Security(api_key_header), db: Session = De
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         )
+    
+def check_user(user,db):
+    db_user = db.query(Users).filter(Users.Email == user.email).first()
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    if not bcrypt.checkpw(user.password.encode('utf-8'), db_user.Password_hash.encode('utf-8')):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password"
+        )
+
+    token=generate_token(db_user.Staff_id)
+    return token, db_user
+
+def filter_model_fields(data: dict, model):
+    model_columns = {c.key for c in inspect(model).mapper.column_attrs}
+    return {k: v for k, v in data.items() if k in model_columns}

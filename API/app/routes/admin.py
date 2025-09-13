@@ -14,19 +14,19 @@ router_admin = APIRouter(
 )
 
 
-@router_admin.post("/create_project", status_code=status.HTTP_201_CREATED)
+@router_admin.post("/project", status_code=status.HTTP_201_CREATED)
 async def create_user(project: Project_schema, db: Session = Depends(get_db),current_user: Users = Depends(token_required)):
     print("create user called")
     
     db_project = Projects(
-        ProjectName = project.project_name,
-        ProjectDescription = project.project_description,
-        StartDate = project.start_data,
-        EndDate = project.end_data,
-        CompletionDate = project.completion_date,
-        projectStatus = project.status,
-        projectPriority = project.priority,
-        Manager = project.manager,
+        ProjectName = project.ProjectName,
+        ProjectDescription = project.ProjectDescription,
+        StartDate = project.StartDate,
+        EndDate = project.EndDate,
+        CompletionDate = project.CompletionDate,
+        projectStatus = project.projectStatus,
+        projectPriority = project.projectPriority,
+        Manager_id = project.Manager_id,
     )
 
     try:
@@ -42,7 +42,7 @@ async def create_user(project: Project_schema, db: Session = Depends(get_db),cur
             "completion_date": db_project.CompletionDate,
             "status": db_project.projectStatus,
             "priority": db_project.projectPriority,
-            "manager": db_project.Manager
+            "manager": db_project.Manager_id
         }
     except Exception as e:
         db.rollback()
@@ -58,10 +58,10 @@ async def create_user(assign: ProjectMembers_schema, db: Session = Depends(get_d
 
 
     db_assign = ProjectMembers(
-        ProjectId = assign.project_id,
-        Staff_id = assign.staff_id,
-        StartDate = assign.start_data,
-        EndDate = assign.end_data,
+        ProjectId = assign.ProjectId,
+        Staff_id = assign.Staff_id,
+        StartDate = assign.StartDate,
+        EndDate = assign.EndDate,
     )
 
     try:
@@ -83,42 +83,3 @@ async def create_user(assign: ProjectMembers_schema, db: Session = Depends(get_d
             detail=f"User creation failed: {e}"
         )
 
-# @router.post("/login_credentials", status_code=status.HTTP_201_CREATED)
-# async def create_user(user: Credentials_schema, db: Session = Depends(get_db)):
-#     print("login called")
-#     db_user = db.query(Users).filter(Users.email == user.email).first()
-#     if not db_user:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="User not found"
-#         )
-
-#     if not bcrypt.checkpw(user.password.encode('utf-8'), db_user.password_hash.encode('utf-8')):
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Incorrect password"
-#         )
-
-#     token=generate_token(db_user.staff_id)
-
-#     return {
-#         "token": token,
-#         "first_name": db_user.first_name,
-#         "last_name": db_user.last_name,
-#         "email": db_user.email,
-#         "role": db_user.role,
-#         "staff_id": db_user.staff_id
-#     }
-
-# @router.get("/secured_route")
-# async def secured_route(current_user: Users = Depends(token_required)):
-#     return {
-#         "message": f"Hello, {current_user.first_name} {current_user.last_name}! You have accessed a secured route.",
-#         "user_details": {
-#             "first_name": current_user.first_name,
-#             "last_name": current_user.last_name,
-#             "email": current_user.email,
-#             "role": current_user.role,
-#             "staff_id": current_user.staff_id
-#         }
-#     }
