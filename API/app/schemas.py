@@ -40,7 +40,7 @@ class Project_schema(BaseModel):
 class ProjectMembers_schema(BaseModel):
     ProjectId: int
     Staff_id: int
-    AssignedDate: datetime
+    AssignedDate: Optional[datetime] = None
     StartDate: datetime
     EndDate: datetime
     Project_status: Literal['Not Started', 'In Progress', 'Completed']   

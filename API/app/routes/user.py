@@ -21,7 +21,13 @@ async def create_user(user: User_schema, db: Session = Depends(get_db)):
     hashed_password = hash_password(user.Password_hash)
 
     if user.Job_role == "employee":
-        user = Employee_schema(**user.dict())
+        try:
+            user = Employee_schema(**user.dict())
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid data for employee: {e}"
+            )
         user_data = user.model_dump()#further reduce it 
         user_data.pop("Password_hash", None) 
         db_user = Users(**filter_model_fields(user_data,Users), Password_hash=hashed_password)
