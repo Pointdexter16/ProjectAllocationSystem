@@ -21,11 +21,50 @@ import GanttChart from '../charts/GanttChart';
 import '../../styles/dashboard.css';
 import { useNavigate } from 'react-router-dom';
 
-const AdminDashboard = () => {
-  const navigate = useNavigate();
 
+// Utility to calculate project status distribution percentages
+function projectStatusDistribution(projects) {
+  const total = projects.length;
+  if (total === 0) return {};
+  const statusCounts = {};
+  projects.forEach(p => {
+    const status = p.status || p.projectStatus;
+    statusCounts[status] = (statusCounts[status] || 0) + 1;
+  });
+  const statusPercentages = {};
+  Object.entries(statusCounts).forEach(([status, count]) => {
+    statusPercentages[status] = Math.round((count / total) * 100 * 100) / 100;
+  });
+  return statusPercentages;
+}
+
+const AdminDashboard = () => {
+  // Hardcode managerId for demo; replace with dynamic value as needed
+  const managerId = 111;
+  const [projects, setProjects] = useState([]);
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8000/admin/project/${managerId}`);
+        // Map backend fields to frontend structure
+        const fetchedProjects = response.data.projects.map(project => ({
+          id: project.ProjectId,
+          name: project.ProjectName,
+          status: project.projectStatus,
+          priority: project.projectPriority,
+          // Add other fields as needed
+        }));
+        setProjects(fetchedProjects);
+      } catch (error) {
+        console.error('Failed to fetch projects for pie chart:', error);
+      }
+    };
+    fetchProjects();
+  }, [managerId]);
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
-    totalEmployees: 0, // Initialize to 0
+    totalEmployees: 0,
+    totalProjects: 0,
     activeProjects: 0,
     completedTasks: 156,
     pendingTasks: 42,
@@ -84,12 +123,18 @@ const AdminDashboard = () => {
     { name: 'QA Team', current: 15, capacity: 20, utilization: 75 }
   ]);
 
-  const projectStatusData = [
-    { name: 'Completed', value: 12, color: '#22c55e' },
-    { name: 'In Progress', value: 8, color: '#3b82f6' },
-    { name: 'Planning', value: 5, color: '#f59e0b' },
-    { name: 'On Hold', value: 2, color: '#ef4444' }
-  ];
+  const statusPercentages = projectStatusDistribution(projects);
+  const statusColors = {
+    'Completed': '#22c55e',
+    'In Progress': '#3b82f6',
+    'Planning': '#f59e0b',
+    'On Hold': '#ef4444'
+  };
+  const projectStatusData = Object.entries(statusPercentages).map(([status, percent]) => ({
+    name: status,
+    value: percent,
+    color: statusColors[status] || '#6b7280'
+  }));
 
   const getStatusBadge = (status) => {
     const variants = {
@@ -130,18 +175,32 @@ const handleCreateProject = () => {
   useEffect(() => {
     const fetchTotalEmployees = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/admin/employee_count'); // Change URL to your API endpoint
+        const response = await axios.get(`http://localhost:8000/admin/employee_count/${managerId}`);
         setStats(prev => ({
           ...prev,
-          totalEmployees: response.data.count // Adjust according to your backend response
+          totalEmployees: response.data.employee_count
         }));
       } catch (error) {
         console.error('Failed to fetch total employees:', error);
       }
     };
 
+    const fetchTotalProjects = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8000/admin/project/${managerId}`);
+        // Assuming response.data.projects is an array
+        setStats(prev => ({
+          ...prev,
+          totalProjects: Array.isArray(response.data.projects) ? response.data.projects.length : 0
+        }));
+      } catch (error) {
+        console.error('Failed to fetch total projects:', error);
+      }
+    };
+
     fetchTotalEmployees();
-  }, []);
+    fetchTotalProjects();
+  }, [managerId]);
 
   useEffect(() => {
     // Fetch other stats like activeProjects, completedTasks, etc. similarly
@@ -210,10 +269,6 @@ const handleCreateProject = () => {
                 <Users style={{ width: '24px', height: '24px' }} />
               </div>
             </div>
-            {/* <div className="stat-trend">
-              <TrendingUp style={{ width: '16px', height: '16px', color: 'var(--success-500)', marginRight: '4px' }} />
-              <span className="trend-text trend-positive">+2 this month</span>
-            </div> */}
           </CardContent>
         </Card>
 
@@ -222,16 +277,12 @@ const handleCreateProject = () => {
             <div className="stat-content">
               <div className="stat-info">
                 <p className="stat-label">Total Projects</p>
-                <p className="stat-value">{stats.activeProjects}</p>
+                <p className="stat-value">{stats.totalProjects}</p>
               </div>
               <div className="stat-icon stat-icon-green">
                 <FolderOpen style={{ width: '24px', height: '24px' }} />
               </div>
             </div>
-            {/* <div className="stat-trend">
-              <TrendingUp style={{ width: '16px', height: '16px', color: 'var(--success-500)', marginRight: '4px' }} />
-              <span className="trend-text trend-positive">+1 this week</span>
-            </div> */}
           </CardContent>
         </Card>
 

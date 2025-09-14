@@ -1,169 +1,59 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import axios from 'axios';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import Badge from '../ui/Badge';
 import { Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronRight as ChevronRightIcon } from 'lucide-react';
 import Button from '../ui/Button';
 
+
+// Calculate project progress based on start and end dates
+function projectProgress(startDate, endDate) {
+  const today = new Date();
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const totalDays = (end - start) / (1000 * 60 * 60 * 24);
+  const elapsedDays = (today - start) / (1000 * 60 * 60 * 24);
+  if (elapsedDays <= 0) {
+    return 0;
+  } else if (elapsedDays >= totalDays) {
+    return 100;
+  } else {
+    return Math.round((elapsedDays / totalDays) * 100 * 100) / 100;
+  }
+}
+
 const GanttChart = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [expandedProjects, setExpandedProjects] = useState(new Set()); // Default expanded
   
-  // Enhanced project data with phases
-  const projects = [
-    {
-      id: 1,
-      name: 'E-commerce Platform',
-      startDate: new Date('2024-01-15'),
-      endDate: new Date('2024-02-15'),
-      progress: 65,
-      status: 'In Progress',
-      priority: 'high',
-      team: 'Frontend Team',
-      phases: [
-        {
-          id: 11,
-          name: 'Planning & Analysis',
-          startDate: new Date('2024-01-15'),
-          endDate: new Date('2024-01-20'),
-          progress: 100,
-          status: 'Completed',
-          color: '#22c55e'
-        },
-        {
-          id: 12,
-          name: 'UI/UX Design',
-          startDate: new Date('2024-01-18'),
-          endDate: new Date('2024-01-28'),
-          progress: 90,
-          status: 'In Progress',
-          color: '#3b82f6'
-        },
-        {
-          id: 13,
-          name: 'Frontend Development',
-          startDate: new Date('2024-01-25'),
-          endDate: new Date('2024-02-08'),
-          progress: 60,
-          status: 'In Progress',
-          color: '#f59e0b'
-        },
-        {
-          id: 14,
-          name: 'Testing & QA',
-          startDate: new Date('2024-02-05'),
-          endDate: new Date('2024-02-12'),
-          progress: 20,
-          status: 'Planning',
-          color: '#8b5cf6'
-        },
-        {
-          id: 15,
-          name: 'Deployment',
-          startDate: new Date('2024-02-10'),
-          endDate: new Date('2024-02-15'),
-          progress: 0,
-          status: 'Planning',
-          color: '#ef4444'
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Mobile App Redesign',
-      startDate: new Date('2024-02-01'),
-      endDate: new Date('2024-03-01'),
-      progress: 25,
-      status: 'Planning',
-      priority: 'medium',
-      team: 'Design Team',
-      phases: [
-        {
-          id: 21,
-          name: 'User Research',
-          startDate: new Date('2024-02-01'),
-          endDate: new Date('2024-02-08'),
-          progress: 80,
-          status: 'In Progress',
-          color: '#22c55e'
-        },
-        {
-          id: 22,
-          name: 'Wireframing',
-          startDate: new Date('2024-02-06'),
-          endDate: new Date('2024-02-15'),
-          progress: 40,
-          status: 'In Progress',
-          color: '#3b82f6'
-        },
-        {
-          id: 23,
-          name: 'Prototyping',
-          startDate: new Date('2024-02-12'),
-          endDate: new Date('2024-02-22'),
-          progress: 0,
-          status: 'Planning',
-          color: '#f59e0b'
-        },
-        {
-          id: 24,
-          name: 'Final Design',
-          startDate: new Date('2024-02-20'),
-          endDate: new Date('2024-03-01'),
-          progress: 0,
-          status: 'Planning',
-          color: '#8b5cf6'
-        }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Data Analytics Dashboard',
-      startDate: new Date('2024-01-10'),
-      endDate: new Date('2024-01-30'),
-      progress: 80,
-      status: 'In Progress',
-      priority: 'high',
-      team: 'Backend Team',
-      phases: [
-        {
-          id: 31,
-          name: 'Data Architecture',
-          startDate: new Date('2024-01-10'),
-          endDate: new Date('2024-01-15'),
-          progress: 100,
-          status: 'Completed',
-          color: '#22c55e'
-        },
-        {
-          id: 32,
-          name: 'Backend APIs',
-          startDate: new Date('2024-01-14'),
-          endDate: new Date('2024-01-22'),
-          progress: 95,
-          status: 'In Progress',
-          color: '#3b82f6'
-        },
-        {
-          id: 33,
-          name: 'Dashboard UI',
-          startDate: new Date('2024-01-20'),
-          endDate: new Date('2024-01-28'),
-          progress: 70,
-          status: 'In Progress',
-          color: '#f59e0b'
-        },
-        {
-          id: 34,
-          name: 'Integration Testing',
-          startDate: new Date('2024-01-26'),
-          endDate: new Date('2024-01-30'),
-          progress: 30,
-          status: 'In Progress',
-          color: '#8b5cf6'
-        }
-      ]
-    }
-  ];
+  // State for projects fetched from backend
+  const [projects, setProjects] = useState([]);
+  const managerId = 111; // Use your actual manager ID
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8000/admin/project/${managerId}`);
+        // Convert date strings to Date objects for timeline calculations
+        const fetchedProjects = response.data.projects.map(project => ({
+          id: project.ProjectId,
+          name: project.ProjectName,
+          description: project.ProjectDescription,
+          startDate: new Date(project.StartDate),
+          endDate: new Date(project.EndDate),
+          status: project.projectStatus,
+          priority: project.projectPriority,
+          team: project.Manager_id ? `Manager ${project.Manager_id}` : '',
+          phases: [], // You can map members to phases if needed
+          // Add other fields as needed
+        }));
+        setProjects(fetchedProjects);
+      } catch (error) {
+        console.error('Failed to fetch projects:', error);
+      }
+    };
+    fetchProjects();
+  }, []);
 
   // Generate date range for the timeline
   const generateDateRange = () => {
@@ -300,7 +190,8 @@ const GanttChart = () => {
             {projects.map((project) => {
               const isExpanded = expandedProjects.has(project.id);
               const projectBarPosition = calculateBarPosition(project);
-              
+              // Calculate progress using startDate and endDate
+              const calculatedProgress = projectProgress(project.startDate, project.endDate);
               return (
                 <div key={project.id} className="gantt-project-group">
                   {/* Project Header Row */}
@@ -341,12 +232,12 @@ const GanttChart = () => {
                         <div
                           className="gantt-progress-bar"
                           style={{
-                            width: `${project.progress}%`,
+                            width: `${calculatedProgress}%`,
                             backgroundColor: `${getStatusColor(project.status)}dd`
                           }}
                         />
                         <span className="gantt-progress-text">
-                          {project.progress}%
+                          {calculatedProgress}%
                         </span>
                       </div>
                     </div>
