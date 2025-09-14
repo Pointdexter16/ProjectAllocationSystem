@@ -121,3 +121,16 @@ async def create_user(assign: ProjectMembers_schema, db: Session = Depends(get_d
             detail=f"User creation failed: {e}"
         )
 
+@router_admin.get("/employee_count")
+async def get_employee_count(db: Session = Depends(get_db)):
+    count = db.query(Users).count()
+    return {"count": count}
+
+@router_admin.get("/project_count")
+async def get_project_count(db: Session = Depends(get_db)):
+    total_count = db.query(Projects).count()
+    active_count = db.query(Projects).filter(Projects.projectStatus == "Active").count()
+    return {
+        "total_count": total_count,
+        "active_count": active_count
+    }

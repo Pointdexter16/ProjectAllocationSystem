@@ -14,6 +14,7 @@ import ProjectsManagement from './components/projects/ProjectsManagement';
 import EmployeesManagement from './components/employees/EmployeesManagement';
 import CapacityDashboard from './components/capacity/CapacityDashboard';
 
+
 // Dashboard Router Component
 const DashboardRouter = () => {
   const { user, loading, isAuthenticated } = useAuth();

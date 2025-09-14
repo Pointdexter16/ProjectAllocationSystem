@@ -1,4 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
+import axios from 'axios'; // Add this import
+import CreateProjectModal from '../projects/CreateProjectModal';
+// import NewProjectModal from '../projects/newProjectmodal';
+
 import { 
   Users, 
   FolderOpen, 
@@ -15,16 +19,33 @@ import Badge from '../ui/Badge';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import GanttChart from '../charts/GanttChart';
 import '../../styles/dashboard.css';
+import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+
   const [stats, setStats] = useState({
-    totalEmployees: 24,
-    activeProjects: 8,
+    totalEmployees: 0, // Initialize to 0
+    activeProjects: 0,
     completedTasks: 156,
     pendingTasks: 42,
     totalWorkHours: 1920,
     utilizationRate: 78
   });
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [newProject, setNewProject] = useState({
+    name: '',
+    description: '',
+    status: 'Planning',
+    priority: 'medium',
+    startDate: '',
+    endDate: '',
+    budget: '',
+    manager: ''
+  });
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [employees, setEmployees] = useState([]); // Populate with your employee data
+  
 
   const [recentProjects, setRecentProjects] = useState([
     {
@@ -88,6 +109,58 @@ const AdminDashboard = () => {
     };
     return variants[priority] || 'secondary';
   };
+const handleCreateProject = () => {
+    setNewProject({
+      name: '',
+      description: '',
+      status: 'Planning',
+      priority: 'medium',
+      startDate: '',
+      endDate: '',
+      budget: '',
+      manager: ''
+    });
+    setSelectedEmployees([]);
+    setShowProjectModal(true);
+  };
+  const handleNewProjectClick = () => {
+    navigate('');
+  };
+//   Fetching total employees 
+  useEffect(() => {
+    const fetchTotalEmployees = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/admin/employee_count'); // Change URL to your API endpoint
+        setStats(prev => ({
+          ...prev,
+          totalEmployees: response.data.count // Adjust according to your backend response
+        }));
+      } catch (error) {
+        console.error('Failed to fetch total employees:', error);
+      }
+    };
+
+    fetchTotalEmployees();
+  }, []);
+
+  useEffect(() => {
+    // Fetch other stats like activeProjects, completedTasks, etc. similarly
+    const fetchOtherStats = async () => {
+      // Example for fetching active projects
+      try {
+        const response = await axios.get('http://localhost:8000/admin/project_count');
+        setStats(prev => ({
+          ...prev,
+          activeProjects: response.data.active_count // Use active_count for active projects
+        }));
+      } catch (error) {
+        console.error('Failed to fetch active projects:', error);
+      }
+    };
+
+    fetchOtherStats();
+    
+  }, []);
 
   return (
     <div className="admin-dashboard">
@@ -98,10 +171,25 @@ const AdminDashboard = () => {
           <p className="page-description">Overview of projects, teams, and resource allocation</p>
         </div>
         <div className="dashboard-actions">
-          <Button variant="outline">
+          {/* <Button variant="outline">
             <Plus style={{ width: '16px', height: '16px', marginRight: '8px' }} />
             New Project
-          </Button>
+          </Button> */}
+
+
+
+          <Button onClick={() => setShowProjectModal(true)}>
+          <Plus style={{ width: '16px', height: '16px', marginRight: '8px' }} />
+          New Project
+        </Button>
+
+        
+{/* <Button onClick={() => setShowProjectModal(true)}>New Project</Button> */}
+
+
+
+
+        
           <Button>
             <Users style={{ width: '16px', height: '16px', marginRight: '8px' }} />
             Add Employee
@@ -313,8 +401,27 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Create Project Modal */}
+      {showProjectModal && (
+        <CreateProjectModal
+          isOpen={showProjectModal}
+          onClose={() => setShowProjectModal(false)}
+          newProject={newProject}
+          setNewProject={setNewProject}
+          employees={employees}
+          selectedEmployees={selectedEmployees}
+          setSelectedEmployees={setSelectedEmployees}
+          handleSaveNewProject={() => {
+            // Your logic to save the new project
+            setShowProjectModal(false);
+            // Optionally reset newProject and selectedEmployees
+          }}
+        />
+      )}
     </div>
   );
 };
 
 export default AdminDashboard;
+

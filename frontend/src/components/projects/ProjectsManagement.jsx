@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../../styles/projects.css';
+
+
 import { 
   FolderOpen, 
   Users, 
@@ -551,10 +553,14 @@ const ProjectsManagement = () => {
           <h1 className="page-title">Projects Management</h1>
           <p className="page-description">Manage all projects and assign team members</p>
         </div>
+
+
         <Button onClick={handleCreateProject}>
           <Plus style={{ width: '16px', height: '16px', marginRight: '8px' }} />
           New Project
         </Button>
+
+      
       </div>
 
       {/* Filters */}
