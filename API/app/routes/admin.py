@@ -108,3 +108,20 @@ async def get_employee_count(
 
     return {"manager_id": manager_id, "employee_count": count}
 
+@router_admin.get("/Employees/all", status_code=status.HTTP_200_OK)
+def fetch_all_employees(db: Session = Depends(get_db), current_user: Users = Depends(token_required)):
+    employees = db.query(Employee).all()
+    # You may want to format the response similar to fetch_employees_by_job_title
+    response = []
+    for emp in employees:
+        user = db.query(Users).filter(Users.Staff_id == emp.Staff_id).first()
+        response.append({
+            "Staff_id": emp.Staff_id,
+            "First_name": user.First_name if user else None,
+            "Last_name": user.Last_name if user else None,
+            "Email": user.Email if user else None,
+            "Job_title": emp.Job_title,
+            "EmployeeStatus": emp.EmployeeStatus,
+            "Manager_id": emp.Manager_id,
+        })
+    return {"employees": response}

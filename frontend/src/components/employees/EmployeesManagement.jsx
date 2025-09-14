@@ -23,197 +23,9 @@ import Input from '../ui/Input';
 import Select from '../ui/Select';
 
 const EmployeesManagement = () => {
-  const { employees, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
-  const [removedLocalState] = useState([
-    {
-      id: 1,
-      name: 'Alice Johnson',
-      email: 'alice.johnson@company.com',
-      phone: '+1 (555) 123-4567',
-      role: 'Frontend Developer',
-      department: 'Engineering',
-      status: 'active',
-      joinDate: '2023-01-15',
-      salary: 75000,
-      location: 'New York, NY',
-      avatar: 'AJ',
-      skills: ['React', 'JavaScript', 'CSS', 'TypeScript'],
-      capacity: {
-        totalHours: 40, // Total weekly capacity
-        allocatedHours: 32, // Currently allocated hours
-        availableHours: 8, // Available hours
-        utilizationRate: 80 // Percentage utilization
-      },
-      currentProjects: [
-        { id: 1, name: 'E-commerce Platform', role: 'Lead Developer', allocatedHours: 20 },
-        { id: 3, name: 'Data Analytics Dashboard', role: 'Frontend Developer', allocatedHours: 12 }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Bob Wilson',
-      email: 'bob.wilson@company.com',
-      phone: '+1 (555) 234-5678',
-      role: 'Backend Developer',
-      department: 'Engineering',
-      status: 'active',
-      joinDate: '2022-08-20',
-      salary: 80000,
-      location: 'San Francisco, CA',
-      avatar: 'BW',
-      skills: ['Node.js', 'Python', 'MongoDB', 'AWS'],
-      capacity: {
-        totalHours: 40,
-        allocatedHours: 25,
-        availableHours: 15,
-        utilizationRate: 62.5
-      },
-      currentProjects: [
-        { id: 1, name: 'E-commerce Platform', role: 'Backend Developer', allocatedHours: 25 }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Carol Davis',
-      email: 'carol.davis@company.com',
-      phone: '+1 (555) 345-6789',
-      role: 'UI/UX Designer',
-      department: 'Design',
-      status: 'active',
-      joinDate: '2023-03-10',
-      salary: 70000,
-      location: 'Austin, TX',
-      avatar: 'CD',
-      skills: ['Figma', 'Adobe XD', 'Sketch', 'Prototyping'],
-      capacity: {
-        totalHours: 40,
-        allocatedHours: 38,
-        availableHours: 2,
-        utilizationRate: 95
-      },
-      currentProjects: [
-        { id: 1, name: 'E-commerce Platform', role: 'UI/UX Designer', allocatedHours: 18 },
-        { id: 2, name: 'Mobile App Redesign', role: 'Lead Designer', allocatedHours: 20 }
-      ]
-    },
-    {
-      id: 4,
-      name: 'David Brown',
-      email: 'david.brown@company.com',
-      phone: '+1 (555) 456-7890',
-      role: 'QA Engineer',
-      department: 'Quality',
-      status: 'active',
-      joinDate: '2022-11-05',
-      salary: 65000,
-      location: 'Seattle, WA',
-      avatar: 'DB',
-      skills: ['Selenium', 'Jest', 'Cypress', 'Manual Testing'],
-      capacity: {
-        totalHours: 40,
-        allocatedHours: 15,
-        availableHours: 25,
-        utilizationRate: 37.5
-      },
-      currentProjects: [
-        { id: 1, name: 'E-commerce Platform', role: 'QA Engineer', allocatedHours: 15 }
-      ]
-    },
-    {
-      id: 5,
-      name: 'Eva Martinez',
-      email: 'eva.martinez@company.com',
-      phone: '+1 (555) 567-8901',
-      role: 'DevOps Engineer',
-      department: 'Engineering',
-      status: 'active',
-      joinDate: '2023-05-12',
-      salary: 85000,
-      location: 'Denver, CO',
-      avatar: 'EM',
-      skills: ['Docker', 'Kubernetes', 'AWS', 'Jenkins'],
-      capacity: {
-        totalHours: 40,
-        allocatedHours: 30,
-        availableHours: 10,
-        utilizationRate: 75
-      },
-      currentProjects: [
-        { id: 1, name: 'E-commerce Platform', role: 'DevOps Engineer', allocatedHours: 15 },
-        { id: 4, name: 'API Integration Platform', role: 'DevOps Engineer', allocatedHours: 15 }
-      ]
-    },
-    {
-      id: 6,
-      name: 'Frank Miller',
-      email: 'frank.miller@company.com',
-      phone: '+1 (555) 678-9012',
-      role: 'Mobile Developer',
-      department: 'Engineering',
-      status: 'active',
-      joinDate: '2022-12-01',
-      salary: 78000,
-      location: 'Los Angeles, CA',
-      avatar: 'FM',
-      skills: ['React Native', 'Swift', 'Kotlin', 'Flutter'],
-      capacity: {
-        totalHours: 40,
-        allocatedHours: 35,
-        availableHours: 5,
-        utilizationRate: 87.5
-      },
-      currentProjects: [
-        { id: 2, name: 'Mobile App Redesign', role: 'Mobile Developer', allocatedHours: 35 }
-      ]
-    },
-    {
-      id: 7,
-      name: 'Grace Lee',
-      email: 'grace.lee@company.com',
-      phone: '+1 (555) 789-0123',
-      role: 'UI/UX Designer',
-      department: 'Design',
-      status: 'on-leave',
-      joinDate: '2023-02-14',
-      salary: 72000,
-      location: 'Chicago, IL',
-      avatar: 'GL',
-      skills: ['Figma', 'User Research', 'Wireframing', 'Prototyping'],
-      capacity: {
-        totalHours: 40,
-        allocatedHours: 0,
-        availableHours: 0,
-        utilizationRate: 0
-      },
-      currentProjects: [
-        { id: 2, name: 'Mobile App Redesign', role: 'UI/UX Designer', allocatedHours: 0 }
-      ]
-    },
-    {
-      id: 8,
-      name: 'Henry Taylor',
-      email: 'henry.taylor@company.com',
-      phone: '+1 (555) 890-1234',
-      role: 'Product Manager',
-      department: 'Product',
-      status: 'active',
-      joinDate: '2021-09-15',
-      salary: 95000,
-      location: 'Boston, MA',
-      avatar: 'HT',
-      skills: ['Product Strategy', 'Agile', 'Analytics', 'Leadership'],
-      capacity: {
-        totalHours: 40,
-        allocatedHours: 20,
-        availableHours: 20,
-        utilizationRate: 50
-      },
-      currentProjects: [
-        { id: 2, name: 'Mobile App Redesign', role: 'Product Manager', allocatedHours: 20 }
-      ]
-    }
-  ]);
-
+  const { employees, addEmployee, updateEmployee, deleteEmployee, setEmployees } = useEmployees();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -238,6 +50,27 @@ const EmployeesManagement = () => {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [deletingEmployee, setDeletingEmployee] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Use searchTerm as job title for backend search
+        const jobTitle = searchTerm.trim() || "all";
+        const endpoint = jobTitle === "all"
+          ? "http://localhost:8000/admin/Employees/all"
+          : `http://localhost:8000/admin/Employees/${encodeURIComponent(jobTitle)}`;
+        const response = await window.axios.get(endpoint);
+        setEmployees(response.data.employees || response.data);
+      } catch (err) {
+        setError("Failed to fetch employees");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEmployees();
+  }, [searchTerm, setEmployees]);
 
   const getStatusBadge = (status) => {
     switch (status.toLowerCase()) {

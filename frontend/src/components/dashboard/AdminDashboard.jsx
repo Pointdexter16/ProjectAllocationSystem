@@ -2,6 +2,7 @@ import React, { useState, useEffect, use } from 'react';
 import axios from 'axios'; // Add this import
 import CreateProjectModal from '../projects/CreateProjectModal';
 // import NewProjectModal from '../projects/newProjectmodal';
+import { useAuth } from '../../contexts/AuthContext';
 
 import { 
   Users, 
@@ -39,8 +40,8 @@ function projectStatusDistribution(projects) {
 }
 
 const AdminDashboard = () => {
-  // Hardcode managerId for demo; replace with dynamic value as needed
-  const managerId = 111;
+  const { user } = useAuth();
+  const managerId = user?.Staff_id;
   const [projects, setProjects] = useState([]);
   useEffect(() => {
     const fetchProjects = async () => {
@@ -154,7 +155,7 @@ const AdminDashboard = () => {
     };
     return variants[priority] || 'secondary';
   };
-const handleCreateProject = () => {
+  const handleCreateProject = () => {
     setNewProject({
       name: '',
       description: '',
@@ -168,8 +169,26 @@ const handleCreateProject = () => {
     setSelectedEmployees([]);
     setShowProjectModal(true);
   };
-  const handleNewProjectClick = () => {
-    navigate('');
+
+  // Save new project to backend
+  const handleSaveNewProject = async () => {
+    try {
+      await axios.post('http://localhost:8000/admin/project', {
+        ProjectName: newProject.name,
+        ProjectDescription: newProject.description,
+        projectStatus: newProject.status,
+        projectPriority: newProject.priority,
+        startDate: newProject.startDate,
+        endDate: newProject.endDate,
+        budget: newProject.budget,
+        manager: newProject.manager,
+        teamMembers: selectedEmployees,
+      });
+      setShowProjectModal(false);
+      // Optionally reset newProject and selectedEmployees
+    } catch (error) {
+      console.error('Failed to create project:', error);
+    }
   };
 //   Fetching total employees 
   useEffect(() => {
@@ -463,11 +482,7 @@ const handleCreateProject = () => {
           employees={employees}
           selectedEmployees={selectedEmployees}
           setSelectedEmployees={setSelectedEmployees}
-          handleSaveNewProject={() => {
-            // Your logic to save the new project
-            setShowProjectModal(false);
-            // Optionally reset newProject and selectedEmployees
-          }}
+          handleSaveNewProject={handleSaveNewProject}
         />
       )}
     </div>

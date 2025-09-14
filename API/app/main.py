@@ -9,6 +9,8 @@ from .routes import user,admin
 origins = [
     "http://localhost:5173",  # Vite dev server
     "http://127.0.0.1:5173",  # Sometimes browsers resolve this way
+    "http://localhost:5174",      
+    "http://127.0.0.1:5174",  
 ]
 
 

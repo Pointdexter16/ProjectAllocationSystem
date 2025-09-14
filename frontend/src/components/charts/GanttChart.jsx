@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, use } from 'react';
 import axios from 'axios';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import Badge from '../ui/Badge';
 import { Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronRight as ChevronRightIcon } from 'lucide-react';
 import Button from '../ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
 
 
 // Calculate project progress based on start and end dates
@@ -28,7 +29,8 @@ const GanttChart = () => {
   
   // State for projects fetched from backend
   const [projects, setProjects] = useState([]);
-  const managerId = 111; // Use your actual manager ID
+  const {user} = useAuth();
+  const managerId = user?.Staff_id; // Use your actual manager ID
 
   useEffect(() => {
     const fetchProjects = async () => {
