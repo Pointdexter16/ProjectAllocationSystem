@@ -65,3 +65,10 @@ class loginResponse_schema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+#utility schemas
+class ProjectMemberStatusUpdate(BaseModel):
+    project_id: int  
+    staff_id: int
+    Project_status: Literal['Not Started', 'In Progress', 'Completed'] 
+
+

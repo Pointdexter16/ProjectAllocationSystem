@@ -12,6 +12,7 @@ from app.models import Users
 from sqlalchemy.inspection import inspect
 from sqlalchemy import select
 from app.models import Projects, ProjectMembers, Employee
+from app.schemas import ProjectMemberStatusUpdate
 
 
 from app.config import SECRET_KEY, ALGORITHM
@@ -219,3 +220,107 @@ def get_all_managers_helper(db):
         }
         for manager in managers
     ]
+
+def delete_project_helper(db, project_id: int):
+    project = db.query(Projects).filter(Projects.ProjectId == project_id).first()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project with id {project_id} not found"
+        )
+
+    try:
+        db.delete(project)
+        db.commit()
+        return {"message": f"Project with id {project_id} deleted successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete project: {e}"
+        )
+    
+def update_project_in_db(db: Session, project_id: int, update_data: dict):
+    project = db.query(Projects).filter(Projects.ProjectId == project_id).first()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project with ID {project_id} not found"
+        )
+
+    for key, value in update_data.items():
+        setattr(project, key, value)
+
+    try:
+        db.commit()
+        db.refresh(project)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to update project: {e}"
+        )
+    return {
+            "project_id": project.ProjectId,
+            "project_name": project.ProjectName,
+            "project_description": project.ProjectDescription,
+            "start_date": project.StartDate,
+            "end_date": project.EndDate,
+            "completion_date": project.CompletionDate,
+            "status": project.projectStatus,
+            "priority": project.projectPriority,
+            "manager": project.Manager_id
+        }
+
+def remove_member_from_project(db: Session, project_id: int, staff_id: int):
+    member = db.query(ProjectMembers).filter(
+        ProjectMembers.ProjectId == project_id,
+        ProjectMembers.Staff_id == staff_id
+    ).first()
+
+    if not member:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No member found with staff_id {staff_id} in project {project_id}"
+        )
+
+    try:
+        db.delete(member)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to remove member: {e}"
+        )
+
+    return {"message": f"Member {staff_id} removed from project {project_id}"}
+
+def update_project_member_status(db: Session, updateStatus: ProjectMemberStatusUpdate):
+    member = db.query(ProjectMembers).filter(
+        ProjectMembers.ProjectId == updateStatus.project_id,
+        ProjectMembers.Staff_id == updateStatus.staff_id
+    ).first()
+
+    if not member:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No member found with staff_id {updateStatus.staff_id} in project {updateStatus.project_id}"
+        )
+
+    try:
+        member.Project_status = updateStatus.Project_status
+        db.commit()
+        db.refresh(member)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update project status: {e}"
+        )
+
+    return {
+        "Project_status": member.Project_status
+    }
