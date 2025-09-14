@@ -9,10 +9,10 @@ class User_schema(BaseModel):
     Email: EmailStr
     Password_hash: str
     Job_role: Literal["manager","employee"]
-    Joining_date: Optional[datetime] 
-    Job_title: Optional[str] 
-    EmployeeStatus: Optional[Literal["active", "inactive"]] 
-    Manager_id: Optional[int] 
+    Joining_date: Optional[datetime] = None
+    Job_title: Optional[str] = ""
+    EmployeeStatus: Optional[Literal["active", "inactive"]] = "active"
+    Manager_id: Optional[int] = None
     
     model_config = ConfigDict(from_attributes=True,extra="ignore")
 
