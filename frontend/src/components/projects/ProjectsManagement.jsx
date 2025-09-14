@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext'; 
+import axios from 'axios';
 import '../../styles/projects.css';
 
 
@@ -22,77 +24,67 @@ import Input from '../ui/Input';
 import Select from '../ui/Select';
 
 const ProjectsManagement = () => {
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      name: 'E-commerce Platform',
-      description: 'Building a modern e-commerce platform with React and Node.js',
-      status: 'In Progress',
-      priority: 'high',
-      startDate: '2024-01-15',
-      endDate: '2024-04-15',
-      progress: 65,
-      budget: 50000,
-      manager: 'John Smith',
-      employees: [
-        { id: 1, name: 'Alice Johnson', role: 'Frontend Developer', avatar: 'AJ' },
-        { id: 2, name: 'Bob Wilson', role: 'Backend Developer', avatar: 'BW' },
-        { id: 3, name: 'Carol Davis', role: 'UI/UX Designer', avatar: 'CD' },
-        { id: 4, name: 'David Brown', role: 'QA Engineer', avatar: 'DB' },
-        { id: 5, name: 'Eva Martinez', role: 'DevOps Engineer', avatar: 'EM' }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Mobile App Redesign',
-      description: 'Complete redesign of the mobile application with new features',
-      status: 'Planning',
-      priority: 'medium',
-      startDate: '2024-02-01',
-      endDate: '2024-05-01',
-      progress: 25,
-      budget: 30000,
-      manager: 'Sarah Connor',
-      employees: [
-        { id: 6, name: 'Frank Miller', role: 'Mobile Developer', avatar: 'FM' },
-        { id: 7, name: 'Grace Lee', role: 'UI/UX Designer', avatar: 'GL' },
-        { id: 8, name: 'Henry Taylor', role: 'Product Manager', avatar: 'HT' }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Data Analytics Dashboard',
-      description: 'Advanced analytics dashboard for business intelligence',
-      status: 'In Progress',
-      priority: 'high',
-      startDate: '2024-01-01',
-      endDate: '2024-03-30',
-      progress: 80,
-      budget: 40000,
-      manager: 'Mike Johnson',
-      employees: [
-        { id: 9, name: 'Ivy Chen', role: 'Data Scientist', avatar: 'IC' },
-        { id: 10, name: 'Jack Robinson', role: 'Frontend Developer', avatar: 'JR' },
-        { id: 11, name: 'Kate Williams', role: 'Backend Developer', avatar: 'KW' }
-      ]
-    },
-    {
-      id: 4,
-      name: 'API Integration Platform',
-      description: 'Microservices architecture for third-party integrations',
-      status: 'Completed',
-      priority: 'medium',
-      startDate: '2023-10-01',
-      endDate: '2024-01-15',
-      progress: 100,
-      budget: 35000,
-      manager: 'Lisa Anderson',
-      employees: [
-        { id: 12, name: 'Leo Garcia', role: 'Backend Developer', avatar: 'LG' },
-        { id: 13, name: 'Mia Thompson', role: 'DevOps Engineer', avatar: 'MT' }
-      ]
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [projects, setProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+  const [errorProjects, setErrorProjects] = useState(null);
+  const { user } = useAuth();
+  const managerId = user?.Staff_id;
+  // const managerId = 1; // Replace with dynamic value as needed
+  // Fetch projects for a particular manager from backend on mount
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setLoadingProjects(true);
+      setErrorProjects(null);
+      try {
+        const response = await axios.get(`http://localhost:8000/admin/project/${managerId}`);
+        // Normalize backend project data to expected frontend property names
+        const rawProjects = response.data.projects || [];
+        const normalizedProjects = rawProjects.map(project => ({
+          id: project.id ?? project.ProjectID ?? project.project_id,
+          name: project.name ?? project.ProjectName ?? '',
+          description: project.description ?? project.ProjectDescription ?? '',
+          status: project.status ?? project.ProjectStatus ?? 'Planning',
+          priority: project.priority ?? project.ProjectPriority ?? 'medium',
+          startDate: project.startDate ?? project.StartDate ?? '',
+          endDate: project.endDate ?? project.EndDate ?? '',
+          progress: project.progress ?? project.Progress ?? 0,
+          budget: project.budget ?? project.Budget ?? 0,
+          manager: project.manager ?? project.Manager ?? '',
+          employees: project.employees ?? project.TeamMembers ?? [],
+        }));
+        setProjects(normalizedProjects);
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setErrorProjects(
+          err.response?.data?.detail
+            ? `Failed to fetch projects: ${err.response.data.detail}`
+            : `Failed to fetch projects: ${err.message}`
+        );
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
+    if (managerId) {
+      fetchProjects();
     }
-  ]);
+  }, [managerId]);
+
+  // Function to add a new project (POST to backend)
+  const addProject = async (newProject) => {
+    try {
+      const response = await axios.post('http://localhost:8000/admin/project', newProject);
+      if (response.data && response.data.project) {
+        setProjects((prev) => [...prev, response.data.project]);
+        setSuccessMessage('Project created successfully!');
+        setShowSuccessPopup(true);
+        setTimeout(() => setShowSuccessPopup(false), 2000);
+      }
+    } catch (err) {
+      alert('Failed to add project: ' + (err.response?.data?.detail || err.message));
+    }
+  };
 
   const [employees, setEmployees] = useState([
     { 
@@ -272,7 +264,7 @@ const ProjectsManagement = () => {
   const [projectDropdownOpen, setProjectDropdownOpen] = useState(null);
 
   const getStatusBadge = (status) => {
-    switch (status.toLowerCase()) {
+  switch ((status || '').toLowerCase()) {
       case 'completed':
         return 'success';
       case 'in progress':
@@ -287,7 +279,7 @@ const ProjectsManagement = () => {
   };
 
   const getPriorityBadge = (priority) => {
-    switch (priority.toLowerCase()) {
+  switch ((priority || '').toLowerCase()) {
       case 'high':
         return 'danger';
       case 'medium':
@@ -300,12 +292,12 @@ const ProjectsManagement = () => {
   };
 
   const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || project.status.toLowerCase() === statusFilter.toLowerCase();
-    const matchesPriority = priorityFilter === 'all' || project.priority.toLowerCase() === priorityFilter.toLowerCase();
+  const matchesSearch = (project.name || project.ProjectName || '').toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+             ((project.description || project.ProjectDescription || '').toLowerCase().includes((searchTerm || '').toLowerCase()));
+  const matchesStatus = statusFilter === 'all' || ((project.status || project.projectStatus || '').toLowerCase() === (statusFilter || '').toLowerCase());
+  const matchesPriority = priorityFilter === 'all' || ((project.priority || project.projectPriority || '').toLowerCase() === (priorityFilter || '').toLowerCase());
     
-    return matchesSearch && matchesStatus && matchesPriority;
+  return matchesSearch && matchesStatus && matchesPriority;
   });
 
   const handleAssignEmployees = (projectId) => {
@@ -459,23 +451,29 @@ const ProjectsManagement = () => {
       return;
     }
 
+    // Capitalize priority for backend
+    const priorityMap = {
+      low: 'Low',
+      medium: 'Medium',
+      high: 'High'
+    };
     const project = {
-      id: projects.length + 1,
-      name: newProject.name,
-      description: newProject.description,
-      status: newProject.status,
-      priority: newProject.priority,
-      startDate: newProject.startDate,
-      endDate: newProject.endDate,
+      ProjectName: newProject.name,
+      ProjectDescription: newProject.description,
+      StartDate: newProject.startDate,
+      EndDate: newProject.endDate,
+      projectStatus: newProject.status,
+      projectPriority: priorityMap[newProject.priority?.toLowerCase()] || 'Medium',
       progress: 0,
       budget: parseFloat(newProject.budget) || 0,
-      manager: newProject.manager,
-      employees: employees.filter(emp => selectedEmployees.includes(emp.id))
+      Manager_id: user?.Staff_id,
+      employee_ids: selectedEmployees
     };
 
-    setProjects([...projects, project]);
-    
-    // Update employee capacity for assigned employees
+    // Send to backend and update local state only on success
+    addProject(project);
+
+    // Update employee capacity for assigned employees (after backend confirms)
     selectedEmployees.forEach(empId => {
       updateEmployeeCapacity(empId, project.id, 20, true); // Default 20 hours allocation
     });
@@ -547,6 +545,21 @@ const ProjectsManagement = () => {
 
   return (
     <div className="projects-management">
+      {showSuccessPopup && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          background: 'var(--success-500)',
+          color: 'white',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          zIndex: 9999
+        }}>
+          {successMessage}
+        </div>
+      )}
       {/* Header */}
       <div className="projects-header">
         <div className="projects-header-content">
@@ -656,7 +669,7 @@ const ProjectsManagement = () => {
                   <div className="team-header">
                     <div className="team-info">
                       <Users style={{ width: '16px', height: '16px' }} />
-                      <span>Team ({project.employees.length})</span>
+                      <span>Team ({Array.isArray(project.employees) ? project.employees.length : 0})</span>
                     </div>
                     <Button 
                       variant="outline" 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { 
   CheckSquare, 
   Clock, 
@@ -71,32 +72,44 @@ const EmployeeDashboard = () => {
     }
   ]);
 
-  const [myProjects, setMyProjects] = useState([
-    {
-      id: 1,
-      name: 'E-commerce Platform',
-      role: 'Frontend Developer',
-      progress: 65,
-      tasksCount: 8,
-      completedTasks: 5
-    },
-    {
-      id: 2,
-      name: 'Mobile App Redesign',
-      role: 'UI/UX Developer',
-      progress: 40,
-      tasksCount: 6,
-      completedTasks: 2
-    },
-    {
-      id: 3,
-      name: 'Data Analytics Dashboard',
-      role: 'Frontend Developer',
-      progress: 85,
-      tasksCount: 4,
-      completedTasks: 3
+  const [myProjects, setMyProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+  const [errorProjects, setErrorProjects] = useState(null);
+  // Fetch projects from backend on mount
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setLoadingProjects(true);
+      setErrorProjects(null);
+      try {
+        const response = await axios.get('http://localhost:8000/admin/employee/projects', {
+          params: { employeeId: user?.id },
+        });
+        setMyProjects(response.data.projects || []);
+      } catch (err) {
+        setErrorProjects('Failed to fetch projects');
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
+    if (user?.id) {
+      fetchProjects();
     }
-  ]);
+  }, [user?.id]);
+
+  // Function to add a new project (POST to backend)
+  const addProject = async (newProject) => {
+    try {
+      const response = await axios.post('http://localhost:8000/admin/employee/projects', {
+        ...newProject,
+        employeeId: user?.id,
+      });
+      if (response.data && response.data.project) {
+        setMyProjects((prev) => [...prev, response.data.project]);
+      }
+    } catch (err) {
+      alert('Failed to add project: ' + (err.response?.data?.detail || err.message));
+    }
+  };
 
   const weeklyHours = [
     { day: 'Mon', hours: 8 },
