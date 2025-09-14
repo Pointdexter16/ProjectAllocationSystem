@@ -22,9 +22,10 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   console.log("🔑 Required Role:", requiredRole);
 
 
-  if (requiredRole && user?.role !== requiredRole) {
-    return <Navigate to="/unauthorized" replace />;
-  }
+  if (requiredRole && user?.Job_role !== requiredRole) {
+  return <Navigate to="/unauthorized" replace />;
+}
+
 
   return children;
 };

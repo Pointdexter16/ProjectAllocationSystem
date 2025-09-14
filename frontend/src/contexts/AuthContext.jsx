@@ -108,39 +108,48 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (credentials) => {
-    dispatch({ type: 'REGISTER_START' });
-    try {
-      const endpoint = 'http://localhost:8000/user';
+  dispatch({ type: 'REGISTER_START' });
+  try {
+    const endpoint = 'http://localhost:8000/user';
 
-      const response = await axios.post(endpoint, {
-        First_name: credentials.First_name,
-        Last_name: credentials.Last_name,
-        Email: credentials.Email,
-        Password_hash: credentials.Password_hash,
-        Job_role: credentials.Job_role,
-        Staff_id: credentials.Staff_id,
-        Joining_date: credentials.Joining_date
-          ? new Date(credentials.Joining_date).toISOString()
-          : new Date().toISOString(),
-        EmployeeStatus: 'active',
-        Manager_id: credentials.Manager_id || null,
-      });
-
-      const user = response.data;
-
-      // Usually, registration APIs don’t return a token,
-      // so token remains null or you might login automatically after registration.
-
-      localStorage.setItem('user', JSON.stringify(user));
-      dispatch({ type: 'REGISTER_SUCCESS', payload: { user, token: null } });
-
-      return { success: true };
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Registration failed';
-      dispatch({ type: 'REGISTER_FAILURE', payload: errorMessage });
-      return { success: false, error: errorMessage };
+    // Build payload dynamically
+    const payload = {
+      First_name: credentials.First_name,
+      Last_name: credentials.Last_name,
+      Email: credentials.Email,
+      Password_hash: credentials.Password_hash,
+      Job_role: credentials.Job_role,
+      Staff_id: credentials.Staff_id,
+    };
+   
+    // Include optional fields only for employees
+    if (credentials.Job_role === 'employee') {
+      payload.Joining_date = credentials.Joining_date
+        ? new Date(credentials.Joining_date).toISOString()
+        : new Date().toISOString();
+      payload.Job_title = credentials.Job_title || '';
+      payload.EmployeeStatus = credentials.EmployeeStatus || 'active';
+      payload.Manager_id = credentials.Manager_id ? Number(credentials.Manager_id) : null;
     }
-  };
+
+    const response = await axios.post(endpoint, payload);
+
+    const user = response.data;
+
+    // Usually, registration APIs don’t return a token,
+    // so token remains null or you might login automatically after registration.
+
+    localStorage.setItem('user', JSON.stringify(user));
+    dispatch({ type: 'REGISTER_SUCCESS', payload: { user, token: null } });
+
+    return { success: true };
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || 'Registration failed';
+    dispatch({ type: 'REGISTER_FAILURE', payload: errorMessage });
+    return { success: false, error: errorMessage };
+  }
+};
+
 
   const logout = () => {
     localStorage.removeItem('token');
