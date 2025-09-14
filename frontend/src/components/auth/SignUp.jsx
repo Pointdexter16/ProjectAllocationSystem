@@ -9,13 +9,13 @@ import toast from 'react-hot-toast';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    password: '',
+    First_name: '',
+    Last_name: '',
+    Email: '',
+    Password_hash: '',
     confirmPassword: '',
-    role: '',
-    staff_id: '', // Assuming you enter this manually or generate it elsewhere
+    Job_role: '',
+    Staff_id: '', // Assuming you enter this manually or generate it elsewhere
   });
 
   const [errors, setErrors] = useState({});
@@ -38,14 +38,14 @@ const SignUp = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.first_name) newErrors.first_name = 'First name is required';
-    if (!formData.last_name) newErrors.last_name = 'Last name is required';
-    if (!formData.email) newErrors.email = 'Email is required';
-    if (!formData.password) newErrors.password = 'Password is required';
-    if (formData.password !== formData.confirmPassword) {
+    if (!formData.First_name) newErrors.First_name = 'First name is required';
+    if (!formData.Last_name) newErrors.Last_name = 'Last name is required';
+    if (!formData.Email) newErrors.Email = 'Email is required';
+    if (!formData.Password_hash) newErrors.Password_hash = 'Password is required';
+    if (formData.Password_hash !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    if (!formData.staff_id) newErrors.staff_id = 'Staff ID is required';
+    if (!formData.Staff_id) newErrors.staff_id = 'Staff ID is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -55,12 +55,12 @@ const SignUp = () => {
     if (!validateForm()) return;
 
     const payload = {
-      first_name: formData.first_name,
-      last_name: formData.last_name,
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-      staff_id: Number(formData.staff_id),
+      First_name: formData.First_name,
+      Last_name: formData.Last_name,
+      Email: formData.Email,
+      Password_hash: formData.Password_hash,
+      Job_role: formData.Job_role,
+      Staff_id: Number(formData.Staff_id),
     };
 
     const result = await register(payload);
@@ -129,18 +129,18 @@ const SignUp = () => {
               <Input
                 label="First Name"
                 name="first_name"
-                value={formData.first_name}
+                value={formData.First_name}
                 onChange={handleChange}
-                error={errors.first_name}
+                error={errors.First_name}
                 required
               />
 
               <Input
                 label="Last Name"
                 name="last_name"
-                value={formData.last_name}
+                value={formData.Last_name}
                 onChange={handleChange}
-                error={errors.last_name}
+                error={errors.Last_name}
                 required
               />
 
@@ -148,7 +148,7 @@ const SignUp = () => {
                 label="Email"
                 type="email"
                 name="email"
-                value={formData.email}
+                value={formData.Email}
                 onChange={handleChange}
                 error={errors.email}
                 required
@@ -158,7 +158,7 @@ const SignUp = () => {
                 label="Password"
                 type="password"
                 name="password"
-                value={formData.password}
+                value={formData.Password_hash}
                 onChange={handleChange}
                 error={errors.password}
                 required
@@ -178,7 +178,7 @@ const SignUp = () => {
                 label="Staff ID"
                 type="number"
                 name="staff_id"
-                value={formData.staff_id}
+                value={formData.Staff_id}
                 onChange={handleChange}
                 error={errors.staff_id}
                 required
@@ -209,3 +209,8 @@ const SignUp = () => {
 };
 
 export default SignUp;
+
+
+//joinnig date
+// job title
+// man_id

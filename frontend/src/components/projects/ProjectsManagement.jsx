@@ -576,7 +576,7 @@ const ProjectsManagement = () => {
                 className="search-input"
               />
             </div>
-            <div className="filter-controls">
+            {/* <div className="filter-controls">
               <Select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -596,7 +596,7 @@ const ProjectsManagement = () => {
                 <option value="medium">Medium</option>
                 <option value="low">Low</option>
               </Select>
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>
@@ -618,11 +618,11 @@ const ProjectsManagement = () => {
                     </Badge>
                   </div>
                 </div>
-                <div className="project-actions">
+                {/* <div className="project-actions">
                   <Button variant="ghost" size="sm">
                     <MoreVertical style={{ width: '16px', height: '16px' }} />
                   </Button>
-                </div>
+                </div> */}
               </div>
             </CardHeader>
             <CardContent>
@@ -634,9 +634,9 @@ const ProjectsManagement = () => {
                     <Calendar style={{ width: '14px', height: '14px' }} />
                     <span>{new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}</span>
                   </div>
-                  <div className="meta-item">
+                  {/* <div className="meta-item">
                     <span className="budget">Budget: ${project.budget.toLocaleString()}</span>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="progress-section">
@@ -666,7 +666,7 @@ const ProjectsManagement = () => {
                       View All
                     </Button>
                   </div>
-                  <div className="team-avatars">
+                  {/* <div className="team-avatars">
                     {project.employees.slice(0, 4).map((employee) => (
                       <div key={employee.id} className="team-avatar" title={employee.name}>
                         {employee.avatar}
@@ -677,7 +677,7 @@ const ProjectsManagement = () => {
                         +{project.employees.length - 4}
                       </div>
                     )}
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="project-card-actions">
@@ -808,7 +808,7 @@ const ProjectsManagement = () => {
               </div>
             </div>
 
-            <div className="form-group">
+            {/* <div className="form-group">
               <label>Budget ($)</label>
               <Input
                 type="number"
@@ -816,9 +816,9 @@ const ProjectsManagement = () => {
                 onChange={(e) => setNewProject({...newProject, budget: e.target.value})}
                 placeholder="Project budget"
               />
-            </div>
+            </div> */}
 
-            <div className="form-group">
+            {/* <div className="form-group">
               <label>Assign Team Members</label>
               <div className="employees-assignment">
                 {employees.map((employee) => {
@@ -857,7 +857,7 @@ const ProjectsManagement = () => {
                   );
                 })}
               </div>
-            </div>
+            </div> */}
           </div>
           
           <div className="modal-actions">

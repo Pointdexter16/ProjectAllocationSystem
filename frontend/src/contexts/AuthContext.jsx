@@ -82,16 +82,16 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'LOGIN_START' });
 
     try {
-      const response = await axios.post('http://localhost:8000/login/login_credentials', {
+      const response = await axios.post('http://localhost:8000/user/login', {
         email: credentials.email,
         password: credentials.password,
       });
 
       // const { user, token } = response.data;
-      const { token, email, first_name, last_name, role, staff_id } = response.data;
+      const { token, Email, First_name, Last_name, Job_role, Staff_id } = response.data;
 
       // Manually create a user object
-      const user = { email, first_name, last_name, role, staff_id };
+      const user = { Email, First_name, Last_name, Job_role, Staff_id };
       console.log("User", user);
 
       localStorage.setItem('token', token);
@@ -110,23 +110,20 @@ export const AuthProvider = ({ children }) => {
   const register = async (credentials) => {
     dispatch({ type: 'REGISTER_START' });
     try {
-      const endpoint = credentials.role === 'manager'
-        ? 'http://localhost:8000/login/create/manager'
-        : 'http://localhost:8000/login/create/employee';
+      const endpoint = 'http://localhost:8000/user';
 
       const response = await axios.post(endpoint, {
-        first_name: credentials.first_name,
-        last_name: credentials.last_name,
-        email: credentials.email,
-        password: credentials.password,
-        role: credentials.role,
-        staff_id: credentials.staff_id,
-        joining_data: credentials.joining_data
-          ? new Date(credentials.joining_data).toISOString()
+        First_name: credentials.First_name,
+        Last_name: credentials.Last_name,
+        Email: credentials.Email,
+        Password_hash: credentials.Password_hash,
+        Job_role: credentials.Job_role,
+        Staff_id: credentials.Staff_id,
+        Joining_date: credentials.Joining_date
+          ? new Date(credentials.Joining_date).toISOString()
           : new Date().toISOString(),
-        emp_status: 'active',
-        manager_id: 1,
-        role_title: 'manager',
+        EmployeeStatus: 'active',
+        Manager_id: credentials.Manager_id || null,
       });
 
       const user = response.data;

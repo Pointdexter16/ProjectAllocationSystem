@@ -178,10 +178,10 @@ const handleCreateProject = () => {
 
 
 
-          <Button onClick={() => setShowProjectModal(true)}>
+          {/* <Button onClick={() => setShowProjectModal(true)}>
           <Plus style={{ width: '16px', height: '16px', marginRight: '8px' }} />
           New Project
-        </Button>
+        </Button> */}
 
         
 {/* <Button onClick={() => setShowProjectModal(true)}>New Project</Button> */}
@@ -190,10 +190,10 @@ const handleCreateProject = () => {
 
 
         
-          <Button>
+          {/* <Button>
             <Users style={{ width: '16px', height: '16px', marginRight: '8px' }} />
             Add Employee
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -221,7 +221,7 @@ const handleCreateProject = () => {
           <CardContent>
             <div className="stat-content">
               <div className="stat-info">
-                <p className="stat-label">Active Projects</p>
+                <p className="stat-label">Total Projects</p>
                 <p className="stat-value">{stats.activeProjects}</p>
               </div>
               <div className="stat-icon stat-icon-green">
@@ -314,7 +314,7 @@ const handleCreateProject = () => {
 
 
       {/* Recent Projects and Team Workload */}
-      <div className="dashboard-content">
+      {/* <div className="dashboard-content">
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -400,7 +400,7 @@ const handleCreateProject = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Create Project Modal */}
       {showProjectModal && (

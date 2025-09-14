@@ -20,14 +20,14 @@ const Header = ({ onMenuClick }) => {
             <Menu style={{ width: '20px', height: '20px' }} />
           </Button>
           
-          <div className="header-search">
+          {/* <div className="header-search">
             <Search style={{ width: '16px', height: '16px' }} />
             <input
               type="text"
               placeholder="Search projects, tasks, employees..."
               className="header-search-input"
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Right side - Notifications and user */}

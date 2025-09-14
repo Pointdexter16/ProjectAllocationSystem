@@ -17,7 +17,7 @@ const CardHeader = ({ className = '', children, ...props }) => {
       className={`card-header ${className}`}
       {...props}
     >
-      {children}
+  {children}
     </div>
   );
 };

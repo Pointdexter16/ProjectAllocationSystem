@@ -32,16 +32,16 @@ const Sidebar = ({ isOpen, onClose }) => {
     // { icon: Calendar, label: 'Calendar', path: '/calendar' },
     // { icon: Building2, label: 'Capacity', path: '/capacity' },
     // { icon: BarChart3, label: 'Analytics', path: '/analytics' },
-    { icon: Settings, label: 'Settings', path: '/settings' }
+    // { icon: Settings, label: 'Settings', path: '/settings' }
   ];
 
   const employeeNavItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: CheckSquare, label: 'My Tasks', path: '/my-tasks' },
-    { icon: FolderOpen, label: 'My Projects', path: '/my-projects' },
+    { icon: CheckSquare, label: 'Employees', path: '/my-tasks' },
+    { icon: FolderOpen, label: 'Projects', path: '/my-projects' },
     // { icon: Calendar, label: 'Schedule', path: '/schedule' },
     // { icon: Clock, label: 'Timesheet', path: '/timesheet' },
-    { icon: Settings, label: 'Profile', path: '/profile' }
+    // { icon: Settings, label: 'Profile', path: '/profile' }
   ];
 
   const navItems = user?.role === 'admin' ? adminNavItems : employeeNavItems;

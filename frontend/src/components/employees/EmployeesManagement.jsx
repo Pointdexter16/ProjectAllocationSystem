@@ -429,7 +429,7 @@ const EmployeesManagement = () => {
           </CardContent>
         </Card>
         
-        <Card className="stat-card">
+        {/* <Card className="stat-card">
           <CardContent>
             <div className="stat-content">
               <div className="stat-info">
@@ -441,9 +441,9 @@ const EmployeesManagement = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
         
-        <Card className="stat-card">
+        {/* <Card className="stat-card">
           <CardContent>
             <div className="stat-content">
               <div className="stat-info">
@@ -469,7 +469,7 @@ const EmployeesManagement = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Filters */}
@@ -486,7 +486,7 @@ const EmployeesManagement = () => {
               />
             </div>
             <div className="filter-controls">
-              <Select
+              {/* <Select
                 value={departmentFilter}
                 onChange={(e) => setDepartmentFilter(e.target.value)}
               >
@@ -494,7 +494,7 @@ const EmployeesManagement = () => {
                 {departments.map(dept => (
                   <option key={dept} value={dept}>{dept}</option>
                 ))}
-              </Select>
+              </Select> */}
               <Select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -504,7 +504,7 @@ const EmployeesManagement = () => {
                 <option value="on-leave">On Leave</option>
                 <option value="inactive">Inactive</option>
               </Select>
-              <Select
+              {/* <Select
                 value={availabilityFilter}
                 onChange={(e) => setAvailabilityFilter(e.target.value)}
               >
@@ -513,9 +513,9 @@ const EmployeesManagement = () => {
                 <option value="medium-load">Medium Load (50-79%)</option>
                 <option value="high-load">High Load (80-94%)</option>
                 <option value="overloaded">Overloaded (≥ 95%)</option>
-              </Select>
+              </Select>*/}
             </div>
-          </div>
+          </div> 
         </CardContent>
       </Card>
 
@@ -536,15 +536,15 @@ const EmployeesManagement = () => {
                       <Badge variant={getStatusBadge(employee.status)}>
                         {employee.status.replace('-', ' ')}
                       </Badge>
-                      <Badge variant="secondary">{employee.department}</Badge>
+                      {/* <Badge variant="secondary">{employee.department}</Badge> */}
                     </div>
                   </div>
                 </div>
-                <div className="employee-actions">
+                {/* <div className="employee-actions">
                   <Button variant="ghost" size="sm">
                     <MoreVertical style={{ width: '16px', height: '16px' }} />
                   </Button>
-                </div>
+                </div> */}
               </div>
 
               <div className="employee-details">
@@ -557,13 +557,13 @@ const EmployeesManagement = () => {
                     <Phone style={{ width: '14px', height: '14px' }} />
                     <span>{employee.phone}</span>
                   </div>
-                  <div className="contact-item">
+                  {/* <div className="contact-item">
                     <MapPin style={{ width: '14px', height: '14px' }} />
                     <span>{employee.location}</span>
-                  </div>
+                  </div> */}
                 </div>
 
-                <div className="skills-section">
+                {/* <div className="skills-section">
                   <h4>Skills</h4>
                   <div className="skills-list">
                     {employee.skills.slice(0, 3).map((skill, index) => (
@@ -573,15 +573,15 @@ const EmployeesManagement = () => {
                       <span className="skill-tag more">+{employee.skills.length - 3}</span>
                     )}
                   </div>
-                </div>
+                </div> */}
 
                 <div className="capacity-section">
                   <h4>Capacity & Workload</h4>
                   <div className="capacity-info">
-                    <div className="capacity-stats">
+                    {/* <div className="capacity-stats">
                       <span className="capacity-label">Allocated: {employee.capacity.allocatedHours}h</span>
                       <span className="capacity-label">Available: {employee.capacity.availableHours}h</span>
-                    </div>
+                    </div> */}
                     <div className="capacity-bar">
                       <div 
                         className="capacity-fill" 
