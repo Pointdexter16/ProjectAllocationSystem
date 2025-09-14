@@ -4,12 +4,14 @@ import datetime
 
 from fastapi import Depends, HTTPException, status, Request, Security
 from jose import jwt, JWTError, ExpiredSignatureError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,joinedload
 from app.database import get_db  # your DB dependency
 from app import models
 from fastapi.security import APIKeyHeader
 from app.models import Users
 from sqlalchemy.inspection import inspect
+from sqlalchemy import select
+from app.models import Projects, ProjectMembers, Employee
 
 
 from app.config import SECRET_KEY, ALGORITHM
@@ -131,3 +133,69 @@ def check_user(user,db):
 def filter_model_fields(data: dict, model):
     model_columns = {c.key for c in inspect(model).mapper.column_attrs}
     return {k: v for k, v in data.items() if k in model_columns}
+
+def get_projects_under_manager(db: Session, manager_id: int):
+    """
+    Fetch all projects managed by a specific manager, 
+    along with their members and member details.
+    """
+    stmt = (
+        select(Projects)
+        .options(
+            joinedload(Projects.members).joinedload(ProjectMembers.employee).joinedload(Employee.user)
+        )
+        .where(Projects.Manager_id == manager_id)
+    )
+
+    results = db.execute(stmt).unique().scalars().all()
+
+    # Optional: convert into a serializable format (dict)
+    projects_list = []
+    for project in results:
+        projects_list.append({
+            "ProjectId": project.ProjectId,
+            "ProjectName": project.ProjectName,
+            "ProjectDescription": project.ProjectDescription,
+            "StartDate": project.StartDate,
+            "EndDate": project.EndDate,
+            "CompletionDate": project.CompletionDate,
+            "projectStatus": project.projectStatus,
+            "projectPriority": project.projectPriority,
+            "members": [
+                {
+                    "Staff_id": member.Staff_id,
+                    "AssignedDate": member.AssignedDate,
+                    "StartDate": member.StartDate,
+                    "EndDate": member.EndDate,
+                    "Project_status": member.Project_status,
+                    "EmployeeName": f"{member.employee.user.First_name} {member.employee.user.Last_name}"
+                }
+                for member in project.members
+            ]
+        })
+
+    return projects_list
+
+def get_active_employees_by_job_title(db, job_title: str):
+    stmt = (
+        select(Employee)
+        .options(joinedload(Employee.user))  # eager-load Users table to get employee names
+        .where(Employee.EmployeeStatus == "Active")
+        .where(Employee.Job_title == job_title)
+    )
+
+    employees_response = db.scalars(stmt).all()
+
+    response = [
+        {
+            "Staff_id": emp.Staff_id,
+            "First_name": emp.user.First_name,
+            "Last_name": emp.user.Last_name,
+            "Email": emp.user.Email,
+            "Job_title": emp.Job_title,
+            "EmployeeStatus": emp.EmployeeStatus,
+            "Manager_id": emp.Manager_id,
+        }
+        for emp in employees_response
+    ]
+    return response

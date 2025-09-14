@@ -16,7 +16,6 @@ router = APIRouter(
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(user: User_schema, db: Session = Depends(get_db)):
-    print("create user called")
     
     hashed_password = hash_password(user.Password_hash)
 
@@ -28,15 +27,15 @@ async def create_user(user: User_schema, db: Session = Depends(get_db)):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid data for employee: {e}"
             )
-        user_data = user.model_dump()#further reduce it 
-        user_data.pop("Password_hash", None) 
+        user_data = user.model_dump().pop("Password_hash", None) 
+        # user_data.pop("Password_hash", None) 
         db_user = Users(**filter_model_fields(user_data,Users), Password_hash=hashed_password)
         db_emp = Employee(**filter_model_fields(user_data,Employee))
         commit_to_db(db,db_user)
         commit_to_db(db,db_emp)     
     else:
-        user_data = user.model_dump()
-        user_data.pop("Password_hash", None)
+        user_data = user.model_dump().pop("Password_hash", None)
+        # user_data.pop("Password_hash", None)
         db_user = Users(**filter_model_fields(user_data,Users), Password_hash=hashed_password)
         commit_to_db(db,db_user)
 
@@ -44,24 +43,13 @@ async def create_user(user: User_schema, db: Session = Depends(get_db)):
     
 
 @router.post("/login", status_code=status.HTTP_201_CREATED)
-async def create_user(user: Credentials_schema, db: Session = Depends(get_db)):
+async def login(user: Credentials_schema, db: Session = Depends(get_db)):
 
     token,db_user=check_user(user,db)
 
     return loginResponse_schema.model_validate(db_user).model_copy(update={"token": token})
 
 
-# @router.get("/secured_route")
-# async def secured_route(current_user: Users = Depends(token_required)):
-#     return {
-#         "message": f"Hello, {current_user.First_name} {current_user.Last_name}! You have accessed a secured route.",
-#         "user_details": {
-#             "first_name": current_user.First_name,
-#             "last_name": current_user.Last_name,
-#             "email": current_user.Email,
-#             "role": current_user.Job_role,
-#             "staff_id": current_user.Staff_id
-#         }
-#     }
+
 
 

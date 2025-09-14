@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.schemas import User_schema,Credentials_schema,Project_schema,ProjectMembers_schema
-import bcrypt
+from app.schemas import Project_schema,ProjectMembers_schema
 from fastapi import status
-from app.database import get_db
-from app.models import Users,Projects,ProjectMembers
+from app.database import get_db,commit_to_db
+from app.models import Users,Projects,ProjectMembers,Employee
 from sqlalchemy.orm import Session
-from app.utility import hash_password,generate_token,token_required
+from app.utility import token_required,get_projects_under_manager,get_active_employees_by_job_title,filter_model_fields
 
 
 router_admin = APIRouter(
@@ -15,122 +14,64 @@ router_admin = APIRouter(
 
 
 @router_admin.post("/project", status_code=status.HTTP_201_CREATED)
-async def create_user(project: Project_schema, db: Session = Depends(get_db),current_user: Users = Depends(token_required)):
-    print("create user called")
-    
-    db_project = Projects(
-        ProjectName = project.ProjectName,
-        ProjectDescription = project.ProjectDescription,
-        StartDate = project.StartDate,
-        EndDate = project.EndDate,
-        CompletionDate = project.CompletionDate,
-        projectStatus = project.projectStatus,
-        projectPriority = project.projectPriority,
-        Manager_id = project.Manager_id,
-    )
+async def create_project(project: Project_schema, db: Session = Depends(get_db),current_user: Users = Depends(token_required)):
 
+    project_data = filter_model_fields(project.model_dump(), Projects)
+    db_project = Projects(**project_data)
     try:
-        db.add(db_project)
-        db.commit()
-        db.refresh(db_project)
-        return {
-            "project_id": db_project.ProjectId,
-            "project_name": db_project.ProjectName,
-            "project_description": db_project.ProjectDescription,
-            "start_data": db_project.StartDate,
-            "end_data": db_project.EndDate,
-            "completion_date": db_project.CompletionDate,
-            "status": db_project.projectStatus,
-            "priority": db_project.projectPriority,
-            "manager": db_project.Manager_id
-        }
+        commit_to_db(db, db_project)  
     except Exception as e:
-        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"User creation failed: {e}"
+            detail=f"Project creation failed: {e}"
         )
 
-@router_admin.get("/project/{manager_id}", status_code=status.HTTP_201_CREATED)
-async def create_user(manager_id, db: Session = Depends(get_db),current_user: Users = Depends(token_required)):
-    print("create user called")
-    
-    db_project = Projects(
-        ProjectName = project.ProjectName,
-        ProjectDescription = project.ProjectDescription,
-        StartDate = project.StartDate,
-        EndDate = project.EndDate,
-        CompletionDate = project.CompletionDate,
-        projectStatus = project.projectStatus,
-        projectPriority = project.projectPriority,
-        Manager_id = project.Manager_id,
-    )
-
-    try:
-        db.add(db_project)
-        db.commit()
-        db.refresh(db_project)
-        return {
-            "project_id": db_project.ProjectId,
-            "project_name": db_project.ProjectName,
-            "project_description": db_project.ProjectDescription,
-            "start_data": db_project.StartDate,
-            "end_data": db_project.EndDate,
-            "completion_date": db_project.CompletionDate,
-            "status": db_project.projectStatus,
-            "priority": db_project.projectPriority,
-            "manager": db_project.Manager_id
-        }
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"User creation failed: {e}"
-        )
-
+    return {'message': 'Project created successfully', 'project_id': db_project.ProjectId}
 
 
 @router_admin.post("/assign_member", status_code=status.HTTP_201_CREATED)
-async def create_user(assign: ProjectMembers_schema, db: Session = Depends(get_db),current_user: Users = Depends(token_required)):
+async def assign_member(assign: ProjectMembers_schema, db: Session = Depends(get_db),current_user: Users = Depends(token_required)):
     print("create user called")
 
 
-    db_assign = ProjectMembers(
-        ProjectId = assign.ProjectId,
-        Staff_id = assign.Staff_id,
-        StartDate = assign.StartDate,
-        EndDate = assign.EndDate,
-    )
+    assign_data = filter_model_fields(assign.model_dump(), ProjectMembers)
+
+    db_assign = ProjectMembers(**assign_data)
 
     try:
-        db.add(db_assign)
-        db.commit()
-        db.refresh(db_assign)
-        return {
-            "assigned_id": db_assign.id,
-            "project_id": db_assign.ProjectId,
-            "staff_id": db_assign.Staff_id,
-            "assigned_date": db_assign.AssignedDate,
-            "start_data": db_assign.StartDate,
-            "end_data": db_assign.EndDate
-        }
+        commit_to_db(db, db_assign)
     except Exception as e:
-        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"User creation failed: {e}"
+            detail=f"Member assignment failed: {e}"
         )
 
-@router_admin.get("/employee_count")
-async def get_employee_count(db: Session = Depends(get_db)):
-    count = db.query(Users).count()
-    return {"count": count}
+    return {'message': 'Member assigned successfully to project'}
+    
 
-@router_admin.get("/project_count")
-async def get_project_count(db: Session = Depends(get_db)):
-    total_count = db.query(Projects).count()
-    active_count = db.query(Projects).filter(Projects.projectStatus == "Active").count()
-    return {
-        "total_count": total_count,
-        "active_count": active_count
-    }
+@router_admin.get("/project/{manager_id}", status_code=status.HTTP_201_CREATED)
+def fetch_projects_for_manager(manager_id: int, db: Session = Depends(get_db),current_user: Users = Depends(token_required)):
+    projects = get_projects_under_manager(db, manager_id)
+    if not projects:
+        raise HTTPException(status_code=404, detail="No projects found for this manager")
+    return {"manager_id": manager_id, "projects": projects}
+
+@router_admin.get("/Employees/{job_title}", status_code=status.HTTP_200_OK)
+def fetch_employees_by_job_title(job_title: str, db: Session = Depends(get_db),current_user: Users = Depends(token_required)):
+    employees = get_active_employees_by_job_title(db, job_title)
+
+    return {"employees": employees}
+
+@router_admin.get("/employee_count/{manager_id}")
+async def get_employee_count(
+    manager_id: int,
+    db: Session = Depends(get_db)
+):
+    count = (
+        db.query(Employee)
+        .filter(Employee.Manager_id == manager_id)
+        .count()
+    )
+
+    return {"manager_id": manager_id, "employee_count": count}
+
