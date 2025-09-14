@@ -4,13 +4,23 @@ from fastapi import status
 from app.database import get_db,commit_to_db
 from app.models import Users,Projects,ProjectMembers,Employee
 from sqlalchemy.orm import Session
-from app.utility import token_required,get_projects_under_manager,get_active_employees_by_job_title,filter_model_fields
+from app.utility import token_required,get_projects_under_manager,get_active_employees_by_job_title,filter_model_fields,get_all_managers_helper
 
 
 router_admin = APIRouter(
     prefix="/admin",
     tags=["admin"]
 )
+
+@router_admin.get("/", status_code=status.HTTP_200_OK)
+async def get_all_managers(db: Session = Depends(get_db)):
+    try:
+        return get_all_managers_helper(db)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch managers: {e}"
+        )
 
 
 @router_admin.post("/project", status_code=status.HTTP_201_CREATED)

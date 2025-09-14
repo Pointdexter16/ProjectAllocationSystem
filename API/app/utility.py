@@ -199,3 +199,23 @@ def get_active_employees_by_job_title(db, job_title: str):
         for emp in employees_response
     ]
     return response
+
+def get_all_managers_helper(db):
+    managers = db.query(Users).filter(Users.Job_role == "manager").all()
+    
+    if not managers:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No managers found"
+        )
+
+    return [
+        {
+            "staff_id": manager.Staff_id,
+            "first_name": manager.First_name,
+            "last_name": manager.Last_name,
+            "email": manager.Email,
+            "job_role": manager.Job_role,
+        }
+        for manager in managers
+    ]
