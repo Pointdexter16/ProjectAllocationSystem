@@ -27,15 +27,15 @@ async def create_user(user: User_schema, db: Session = Depends(get_db)):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid data for employee: {e}"
             )
-        user_data = user.model_dump().pop("Password_hash", None) 
-        # user_data.pop("Password_hash", None) 
+        user_data = user.model_dump()
+        user_data.pop("Password_hash", None) 
         db_user = Users(**filter_model_fields(user_data,Users), Password_hash=hashed_password)
         db_emp = Employee(**filter_model_fields(user_data,Employee))
         commit_to_db(db,db_user)
         commit_to_db(db,db_emp)     
     else:
-        user_data = user.model_dump().pop("Password_hash", None)
-        # user_data.pop("Password_hash", None)
+        user_data = user.model_dump()
+        user_data.pop("Password_hash", None)
         db_user = Users(**filter_model_fields(user_data,Users), Password_hash=hashed_password)
         commit_to_db(db,db_user)
 
