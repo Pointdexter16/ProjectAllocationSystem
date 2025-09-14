@@ -70,16 +70,7 @@ async def remove_member(
     db: Session = Depends(get_db),
     current_user: Users = Depends(token_required)
 ):
-    return remove_member_from_project(db, project_id, staff_id)
-
-@router_admin.patch("/member", status_code=status.HTTP_200_OK)
-async def change_member_status(
-    update_status:ProjectMemberStatusUpdate,
-    db: Session = Depends(get_db),
-    current_user: Users = Depends(token_required)
-):
-    return update_project_member_status(db, update_status)
-    
+    return remove_member_from_project(db, project_id, staff_id)    
 
 @router_admin.get("/project/{manager_id}", status_code=status.HTTP_201_CREATED)
 def fetch_projects_for_manager(manager_id: int, db: Session = Depends(get_db),current_user: Users = Depends(token_required)):

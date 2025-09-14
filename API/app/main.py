@@ -28,7 +28,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(user.router)
+app.include_router(user.router_user)
 app.include_router(admin.router_admin)
 
 @app.get("/")

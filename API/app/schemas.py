@@ -72,3 +72,13 @@ class ProjectMemberStatusUpdate(BaseModel):
     Project_status: Literal['Not Started', 'In Progress', 'Completed'] 
 
 
+# class ProjectMemberAssignmentSearch(BaseModel):
+#     Job_title: str  
+#     StartDate: datetime
+#     EndDate: datetime
+
+class MemberWorkload(BaseModel):
+    Staff_id: int  
+    StartDate: datetime
+    EndDate: datetime
+

@@ -1,7 +1,7 @@
 import bcrypt
 import jwt # remove if not in use check
 import datetime
-
+from datetime import date
 from fastapi import Depends, HTTPException, status, Request, Security
 from jose import jwt, JWTError, ExpiredSignatureError
 from sqlalchemy.orm import Session,joinedload
@@ -323,4 +323,61 @@ def update_project_member_status(db: Session, updateStatus: ProjectMemberStatusU
 
     return {
         "Project_status": member.Project_status
+    }
+
+def get_projects_for_employee(db: Session, employee_id: int):
+    assignments = (
+        db.query(ProjectMembers)
+        .join(ProjectMembers.project)  # join Projects via relationship
+        .filter(ProjectMembers.Staff_id == employee_id)
+        .all()
+    )
+
+    if not assignments:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No projects found for employee_id {employee_id}"
+        )
+
+    return [
+        {
+            "project_id": a.ProjectId,
+            "project_name": a.project.ProjectName,
+            "start_date": a.project.StartDate,
+            "end_date": a.project.EndDate,
+            "completion_date": a.project.CompletionDate,
+            "status": a.Project_status,
+        }
+        for a in assignments
+    ]
+
+def calculate_employee_workload(db: Session, user):
+    
+    query = (
+        db.query(ProjectMembers)
+        .join(ProjectMembers.project)
+        .filter(
+            ProjectMembers.Staff_id == user.Staff_id,
+            Projects.StartDate <= user.StartDate,
+            Projects.EndDate >= user.EndDate,
+            Projects.projectStatus != "Completed"  # ✅ skip completed projects
+        )
+        .options(joinedload(ProjectMembers.project))  # pre-load project details
+    )
+
+    overlapping_projects = query.all()
+
+    count = len(overlapping_projects)
+    workload = 0.0
+    if count >= 3:
+        workload = 100.0
+    elif count == 2:
+        workload = 66.7
+    elif count == 1:
+        workload = 33.3
+    return {
+        "employee_id": user.Staff_id,
+        "workload_percentage": workload,
+        "start_date": user.StartDate,
+        "end_date": user.EndDate
     }
