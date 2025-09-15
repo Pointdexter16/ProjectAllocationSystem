@@ -98,7 +98,7 @@ const SignUp = () => {
       toast.success('Account created successfully!');
       navigate('/dashboard'); // redirect to dashboard
     } catch (loginError) {
-      toast.error('Registration successful but auto-login failed. Please login manually.');
+      toast.success('Please login manually.');
       navigate('/login');
     }
   } else {

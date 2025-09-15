@@ -755,14 +755,14 @@ const ProjectsManagement = () => {
                   placeholder="Enter project name"
                 />
               </div>
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label>Manager</label>
                 <Input
                   value={newProject.manager}
                   onChange={(e) => setNewProject({...newProject, manager: e.target.value})}
                   placeholder="Project manager name"
                 />
-              </div>
+              </div> */}
             </div>
             
             <div className="form-group">
@@ -783,9 +783,9 @@ const ProjectsManagement = () => {
                   value={newProject.status}
                   onChange={(e) => setNewProject({...newProject, status: e.target.value})}
                 >
-                  <option value="Planning">Planning</option>
+                  <option value="Not Started">Not Started</option>
                   <option value="In Progress">In Progress</option>
-                  <option value="On Hold">On Hold</option>
+                  {/* <option value="On Hold">On Hold</option> */}
                   <option value="Completed">Completed</option>
                 </Select>
               </div>

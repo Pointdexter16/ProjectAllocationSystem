@@ -73,12 +73,12 @@ const Modal = ({
     <span className="input-group-text bg-white border-end-0">
       <i className="bi bi-search"></i> {/* Bootstrap Icons */}
     </span>
-    <input
+    {/* <input
       type="text"
       placeholder="Search by job title..."
       className="form-control border-start-0"
       // onChange={handleSearch} // optional
-    />
+    /> */}
   </div>
 
   {children}

@@ -42,32 +42,16 @@ const authReducer = (state, action) => {
 const initialState = {
   user: null,
   token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
+  isAuthenticated: false,
   loading: false,
   error: null
 };
 
 export const AuthProvider = ({ children }) => {
-  // Axios interceptor for 403 responses
-  useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
-      response => response,
-      error => {
-        if (error.response && error.response.status === 403) {
-          console.warn('[AuthContext] Received 403, logging out...');
-          logout();
-          window.location.href = '/login';
-        }
-        return Promise.reject(error);
-      }
-    );
-    return () => axios.interceptors.response.eject(interceptor);
-  }, []);
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   // Set axios Authorization header when token changes
   useEffect(() => {
-  console.log('[AuthContext] Restore effect: token:', localStorage.getItem('token'), 'user:', localStorage.getItem('user'));
     if (state.token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
     } else {
@@ -83,7 +67,6 @@ export const AuthProvider = ({ children }) => {
     if (token && userData) {
       try {
         const user = JSON.parse(userData);
-    console.log('[AuthContext] Restoring user:', user, 'token:', token);
         dispatch({
           type: 'LOGIN_SUCCESS',
           payload: { user, token }
@@ -91,15 +74,9 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-    console.log('[AuthContext] Failed to restore user from localStorage');
       }
     }
   }, []);
-
-  // Log state after it changes (for debugging)
-  useEffect(() => {
-    console.log('[AuthContext] State after restore:', { user: state.user, token: state.token, isAuthenticated: state.isAuthenticated });
-  }, [state.user, state.token, state.isAuthenticated]);
 
   const login = async (credentials) => {
     dispatch({ type: 'LOGIN_START' });

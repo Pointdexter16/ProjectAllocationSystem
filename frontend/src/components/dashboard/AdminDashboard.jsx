@@ -44,9 +44,14 @@ const AdminDashboard = () => {
   const managerId = user?.Staff_id;
   const [projects, setProjects] = useState([]);
   useEffect(() => {
+    const token = localStorage.getItem('token');
     const fetchProjects = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/admin/project/${managerId}`);
+        const response = await axios.get(`http://localhost:8000/admin/project/${managerId}`,{
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         // Map backend fields to frontend structure
         const fetchedProjects = response.data.projects.map(project => ({
           id: project.ProjectId,
@@ -221,24 +226,24 @@ const AdminDashboard = () => {
     fetchTotalProjects();
   }, [managerId]);
 
-  useEffect(() => {
-    // Fetch other stats like activeProjects, completedTasks, etc. similarly
-    const fetchOtherStats = async () => {
-      // Example for fetching active projects
-      try {
-        const response = await axios.get('http://localhost:8000/admin/project_count');
-        setStats(prev => ({
-          ...prev,
-          activeProjects: response.data.active_count // Use active_count for active projects
-        }));
-      } catch (error) {
-        console.error('Failed to fetch active projects:', error);
-      }
-    };
+  // useEffect(() => {
+  //   // Fetch other stats like activeProjects, completedTasks, etc. similarly
+  //   const fetchOtherStats = async () => {
+  //     // Example for fetching active projects
+  //     try {
+  //       const response = await axios.get('http://localhost:8000/project_count');
+  //       setStats(prev => ({
+  //         ...prev,
+  //         activeProjects: response.data.active_count // Use active_count for active projects
+  //       }));
+  //     } catch (error) {
+  //       console.error('Failed to fetch active projects:', error);
+  //     }
+  //   };
 
-    fetchOtherStats();
+  //   fetchOtherStats();
     
-  }, []);
+  // }, []);
 
   return (
     <div className="admin-dashboard">
