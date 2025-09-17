@@ -27,6 +27,7 @@ const ProjectsManagement = () => {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [projects, setProjects] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
   const [errorProjects, setErrorProjects] = useState(null);
   const { user } = useAuth();
@@ -41,19 +42,23 @@ const ProjectsManagement = () => {
         const response = await axios.get(`http://localhost:8000/admin/project/${managerId}`);
         // Normalize backend project data to expected frontend property names
         const rawProjects = response.data.projects || [];
-        const normalizedProjects = rawProjects.map(project => ({
-          id: project.id ?? project.ProjectID ?? project.project_id,
-          name: project.name ?? project.ProjectName ?? '',
-          description: project.description ?? project.ProjectDescription ?? '',
-          status: project.status ?? project.ProjectStatus ?? 'Planning',
-          priority: project.priority ?? project.ProjectPriority ?? 'medium',
-          startDate: project.startDate ?? project.StartDate ?? '',
-          endDate: project.endDate ?? project.EndDate ?? '',
-          progress: project.progress ?? project.Progress ?? 0,
-          budget: project.budget ?? project.Budget ?? 0,
-          manager: project.manager ?? project.Manager ?? '',
-          employees: project.employees ?? project.TeamMembers ?? [],
-        }));
+        const normalizedProjects = rawProjects.map(project => {
+          console.log('Raw project:', project);
+          return {
+            id: project.id ?? project.ProjectId ?? project.ProjectID ?? project.project_id,
+            name: project.name ?? project.ProjectName ?? '',
+            description: project.description ?? project.ProjectDescription ?? '',
+            status: project.status ?? project.projectStatus ?? project.ProjectStatus ?? 'Planning',
+            priority: project.priority ?? project.projectPriority ?? project.ProjectPriority ?? 'medium',
+            startDate: project.startDate ?? project.StartDate ?? '',
+            endDate: project.endDate ?? project.EndDate ?? '',
+            progress: project.progress ?? project.Progress ?? 0,
+            budget: project.budget ?? project.Budget ?? 0,
+            manager: project.manager ?? project.Manager ?? '',
+            employees: project.employees ?? project.TeamMembers ?? [],
+          };
+        });
+        console.log('Normalized projects:', normalizedProjects);
         setProjects(normalizedProjects);
       } catch (err) {
         console.error('Error fetching projects:', err);
@@ -66,9 +71,23 @@ const ProjectsManagement = () => {
         setLoadingProjects(false);
       }
     };
-    if (managerId) {
+   
       fetchProjects();
-    }
+  
+  }, [managerId]);
+
+  // Fetch employees for the manager
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8000/admin/employees/manager/${managerId}`);
+        setEmployees(response.data.employees || []);
+        console.log('Fetched employees:', response.data.employees);
+      } catch (err) {
+        console.error('Error fetching employees:', err);
+      }
+    };
+    if (managerId) fetchEmployees();
   }, [managerId]);
 
   // Function to add a new project (POST to backend)
@@ -86,158 +105,158 @@ const ProjectsManagement = () => {
     }
   };
 
-  const [employees, setEmployees] = useState([
-    { 
-      id: 1, 
-      name: 'Alice Johnson', 
-      role: 'Frontend Developer', 
-      department: 'Engineering', 
-      avatar: 'AJ',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 32, availableHours: 8, utilizationRate: 80 },
-      currentProjects: []
-    },
-    { 
-      id: 2, 
-      name: 'Bob Wilson', 
-      role: 'Backend Developer', 
-      department: 'Engineering', 
-      avatar: 'BW',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 25, availableHours: 15, utilizationRate: 62.5 },
-      currentProjects: []
-    },
-    { 
-      id: 3, 
-      name: 'Carol Davis', 
-      role: 'UI/UX Designer', 
-      department: 'Design', 
-      avatar: 'CD',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 38, availableHours: 2, utilizationRate: 95 },
-      currentProjects: []
-    },
-    { 
-      id: 4, 
-      name: 'David Brown', 
-      role: 'QA Engineer', 
-      department: 'Quality', 
-      avatar: 'DB',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 15, availableHours: 25, utilizationRate: 37.5 },
-      currentProjects: []
-    },
-    { 
-      id: 5, 
-      name: 'Eva Martinez', 
-      role: 'DevOps Engineer', 
-      department: 'Engineering', 
-      avatar: 'EM',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 30, availableHours: 10, utilizationRate: 75 },
-      currentProjects: []
-    },
-    { 
-      id: 6, 
-      name: 'Frank Miller', 
-      role: 'Mobile Developer', 
-      department: 'Engineering', 
-      avatar: 'FM',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 35, availableHours: 5, utilizationRate: 87.5 },
-      currentProjects: []
-    },
-    { 
-      id: 7, 
-      name: 'Grace Lee', 
-      role: 'UI/UX Designer', 
-      department: 'Design', 
-      avatar: 'GL',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 20, availableHours: 20, utilizationRate: 50 },
-      currentProjects: []
-    },
-    { 
-      id: 8, 
-      name: 'Henry Taylor', 
-      role: 'Product Manager', 
-      department: 'Product', 
-      avatar: 'HT',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 20, availableHours: 20, utilizationRate: 50 },
-      currentProjects: []
-    },
-    { 
-      id: 9, 
-      name: 'Ivy Chen', 
-      role: 'Data Scientist', 
-      department: 'Analytics', 
-      avatar: 'IC',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 28, availableHours: 12, utilizationRate: 70 },
-      currentProjects: []
-    },
-    { 
-      id: 10, 
-      name: 'Jack Robinson', 
-      role: 'Frontend Developer', 
-      department: 'Engineering', 
-      avatar: 'JR',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 24, availableHours: 16, utilizationRate: 60 },
-      currentProjects: []
-    },
-    { 
-      id: 11, 
-      name: 'Kate Williams', 
-      role: 'Backend Developer', 
-      department: 'Engineering', 
-      avatar: 'KW',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 32, availableHours: 8, utilizationRate: 80 },
-      currentProjects: []
-    },
-    { 
-      id: 12, 
-      name: 'Leo Garcia', 
-      role: 'Backend Developer', 
-      department: 'Engineering', 
-      avatar: 'LG',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 16, availableHours: 24, utilizationRate: 40 },
-      currentProjects: []
-    },
-    { 
-      id: 13, 
-      name: 'Mia Thompson', 
-      role: 'DevOps Engineer', 
-      department: 'Engineering', 
-      avatar: 'MT',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 22, availableHours: 18, utilizationRate: 55 },
-      currentProjects: []
-    },
-    { 
-      id: 14, 
-      name: 'Noah Davis', 
-      role: 'Frontend Developer', 
-      department: 'Engineering', 
-      avatar: 'ND',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 18, availableHours: 22, utilizationRate: 45 },
-      currentProjects: []
-    },
-    { 
-      id: 15, 
-      name: 'Olivia Wilson', 
-      role: 'Product Designer', 
-      department: 'Design', 
-      avatar: 'OW',
-      status: 'active',
-      capacity: { totalHours: 40, allocatedHours: 26, availableHours: 14, utilizationRate: 65 },
-      currentProjects: []
-    }
-  ]);
+  // const [employees, setEmployees] = useState([
+  //   { 
+  //     id: 1, 
+  //     name: 'Alice Johnson', 
+  //     role: 'Frontend Developer', 
+  //     department: 'Engineering', 
+  //     avatar: 'AJ',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 32, availableHours: 8, utilizationRate: 80 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 2, 
+  //     name: 'Bob Wilson', 
+  //     role: 'Backend Developer', 
+  //     department: 'Engineering', 
+  //     avatar: 'BW',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 25, availableHours: 15, utilizationRate: 62.5 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 3, 
+  //     name: 'Carol Davis', 
+  //     role: 'UI/UX Designer', 
+  //     department: 'Design', 
+  //     avatar: 'CD',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 38, availableHours: 2, utilizationRate: 95 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 4, 
+  //     name: 'David Brown', 
+  //     role: 'QA Engineer', 
+  //     department: 'Quality', 
+  //     avatar: 'DB',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 15, availableHours: 25, utilizationRate: 37.5 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 5, 
+  //     name: 'Eva Martinez', 
+  //     role: 'DevOps Engineer', 
+  //     department: 'Engineering', 
+  //     avatar: 'EM',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 30, availableHours: 10, utilizationRate: 75 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 6, 
+  //     name: 'Frank Miller', 
+  //     role: 'Mobile Developer', 
+  //     department: 'Engineering', 
+  //     avatar: 'FM',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 35, availableHours: 5, utilizationRate: 87.5 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 7, 
+  //     name: 'Grace Lee', 
+  //     role: 'UI/UX Designer', 
+  //     department: 'Design', 
+  //     avatar: 'GL',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 20, availableHours: 20, utilizationRate: 50 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 8, 
+  //     name: 'Henry Taylor', 
+  //     role: 'Product Manager', 
+  //     department: 'Product', 
+  //     avatar: 'HT',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 20, availableHours: 20, utilizationRate: 50 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 9, 
+  //     name: 'Ivy Chen', 
+  //     role: 'Data Scientist', 
+  //     department: 'Analytics', 
+  //     avatar: 'IC',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 28, availableHours: 12, utilizationRate: 70 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 10, 
+  //     name: 'Jack Robinson', 
+  //     role: 'Frontend Developer', 
+  //     department: 'Engineering', 
+  //     avatar: 'JR',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 24, availableHours: 16, utilizationRate: 60 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 11, 
+  //     name: 'Kate Williams', 
+  //     role: 'Backend Developer', 
+  //     department: 'Engineering', 
+  //     avatar: 'KW',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 32, availableHours: 8, utilizationRate: 80 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 12, 
+  //     name: 'Leo Garcia', 
+  //     role: 'Backend Developer', 
+  //     department: 'Engineering', 
+  //     avatar: 'LG',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 16, availableHours: 24, utilizationRate: 40 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 13, 
+  //     name: 'Mia Thompson', 
+  //     role: 'DevOps Engineer', 
+  //     department: 'Engineering', 
+  //     avatar: 'MT',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 22, availableHours: 18, utilizationRate: 55 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 14, 
+  //     name: 'Noah Davis', 
+  //     role: 'Frontend Developer', 
+  //     department: 'Engineering', 
+  //     avatar: 'ND',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 18, availableHours: 22, utilizationRate: 45 },
+  //     currentProjects: []
+  //   },
+  //   { 
+  //     id: 15, 
+  //     name: 'Olivia Wilson', 
+  //     role: 'Product Designer', 
+  //     department: 'Design', 
+  //     avatar: 'OW',
+  //     status: 'active',
+  //     capacity: { totalHours: 40, allocatedHours: 26, availableHours: 14, utilizationRate: 65 },
+  //     currentProjects: []
+  //   }
+  // ]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -526,16 +545,16 @@ const ProjectsManagement = () => {
     setProjectDropdownOpen(null);
   };
 
-  const confirmDeleteProject = () => {
+  const confirmDeleteProject = async () => {
     if (deletingProject) {
-      // Remove project assignments from employees
-      deletingProject.employees?.forEach(emp => {
-        updateEmployeeCapacity(emp.id, deletingProject.id, 20, false);
-      });
-      
-      setProjects(projects.filter(p => p.id !== deletingProject.id));
-      setShowDeleteProjectModal(false);
-      setDeletingProject(null);
+      try {
+        await axios.delete(`http://localhost:8000/admin/project/${deletingProject.id}`);
+        setProjects(projects.filter(p => p.id !== deletingProject.id));
+        setShowDeleteProjectModal(false);
+        setDeletingProject(null);
+      } catch (err) {
+        alert('Failed to delete project: ' + (err.response?.data?.detail || err.message));
+      }
     }
   };
 
@@ -713,13 +732,14 @@ const ProjectsManagement = () => {
                     </Button>
                     {projectDropdownOpen === project.id && (
                       <div className="dropdown-menu">
-                        <button 
+                        {console.log('Dropdown open for project:', project.id, 'State:', projectDropdownOpen)}
+                        {/* <button 
                           className="dropdown-item"
                           onClick={() => handleEditProject(project)}
                         >
                           <Edit style={{ width: '14px', height: '14px' }} />
                           Edit Project
-                        </button>
+                        </button> */}
                         <button 
                           className="dropdown-item delete"
                           onClick={() => handleDeleteProject(project)}

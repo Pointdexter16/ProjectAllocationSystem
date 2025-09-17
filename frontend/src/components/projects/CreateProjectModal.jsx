@@ -34,6 +34,14 @@ const CreateProjectModal = ({
     }
   };
 
+  const toggleEmployeeSelection = (employeeId) => {
+    setSelectedEmployees(prevSelected =>
+      prevSelected.includes(employeeId)
+        ? prevSelected.filter(id => id !== employeeId)
+        : [...prevSelected, employeeId]
+    );
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -127,26 +135,19 @@ const CreateProjectModal = ({
             <label>Assign Team Members</label>
             <div className="employees-assignment">
               {employees.map(employee => (
-                <div key={employee.id} className={`employee-item`}>
+                <div key={employee.Staff_id} className="employee-item">
                   <div className="employee-info">
-                    <div className="employee-avatar">{employee.avatar}</div>
                     <div className="employee-details">
-                      <h4>{employee.name}</h4>
-                      <p>{employee.role} • {employee.department}</p>
+                      <h4>{employee.First_name} {employee.Last_name}</h4>
+                      <p>{employee.Job_title}</p>
+                      <span>{employee.Email}</span>
                     </div>
                   </div>
                   <input
                     type="checkbox"
-                    checked={selectedEmployees.includes(employee.id)}
-                    onChange={() =>
-                      setSelectedEmployees(prev =>
-                        prev.includes(employee.id)
-                          ? prev.filter(id => id !== employee.id)
-                          : [...prev, employee.id]
-                      )
-                    }
+                    checked={selectedEmployees.includes(employee.Staff_id)}
+                    onChange={() => toggleEmployeeSelection(employee.Staff_id)}
                     className="employee-checkbox"
-                    disabled={employee.status !== 'active'}
                   />
                 </div>
               ))}

@@ -77,7 +77,13 @@ def fetch_projects_for_manager(manager_id: int, db: Session = Depends(get_db),cu
     projects = get_projects_under_manager(db, manager_id)
     if not projects:
         raise HTTPException(status_code=404, detail="No projects found for this manager")
-    return {"manager_id": manager_id, "projects": projects}
+    # Ensure each project has both 'id' and 'ProjectId' fields
+    normalized_projects = []
+    for project in projects:
+        normalized = dict(project)
+        normalized['id'] = project.get('ProjectId')
+        normalized_projects.append(normalized)
+    return {"manager_id": manager_id, "projects": normalized_projects}
 
 @router_admin.get("/Employees/{job_title}", status_code=status.HTTP_200_OK)
 def fetch_employees_by_job_title(job_title: str, db: Session = Depends(get_db),current_user: Users = Depends(token_required)):
@@ -112,6 +118,23 @@ async def get_employee_count(
 def fetch_all_employees(db: Session = Depends(get_db), current_user: Users = Depends(token_required)):
     employees = db.query(Employee).all()
     # You may want to format the response similar to fetch_employees_by_job_title
+    response = []
+    for emp in employees:
+        user = db.query(Users).filter(Users.Staff_id == emp.Staff_id).first()
+        response.append({
+            "Staff_id": emp.Staff_id,
+            "First_name": user.First_name if user else None,
+            "Last_name": user.Last_name if user else None,
+            "Email": user.Email if user else None,
+            "Job_title": emp.Job_title,
+            "EmployeeStatus": emp.EmployeeStatus,
+            "Manager_id": emp.Manager_id,
+        })
+    return {"employees": response}
+
+@router_admin.get("/employees/manager/{manager_id}", status_code=status.HTTP_200_OK)
+def fetch_employees_by_manager(manager_id: int, db: Session = Depends(get_db), current_user: Users = Depends(token_required)):
+    employees = db.query(Employee).filter(Employee.Manager_id == manager_id).all()
     response = []
     for emp in employees:
         user = db.query(Users).filter(Users.Staff_id == emp.Staff_id).first()
