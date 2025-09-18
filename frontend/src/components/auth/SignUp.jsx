@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
-import { Building2, User, UserCheck } from 'lucide-react';
+import { Building2, User, UserCheck, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
@@ -25,8 +25,12 @@ const SignUp = () => {
 
   const [managers, setManagers] = useState([]);
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { register, loading } = useAuth();
   const navigate = useNavigate();
+  // For limiting future dates in calendar inputs
+  const todayStr = new Date().toISOString().split('T')[0];
 
   // Fetch managers for dropdown
   useEffect(() => {
@@ -57,12 +61,30 @@ const SignUp = () => {
     const newErrors = {};
     if (!formData.First_name) newErrors.First_name = 'First name is required';
     if (!formData.Last_name) newErrors.Last_name = 'Last name is required';
-    if (!formData.Email) newErrors.Email = 'Email is required';
-    if (!formData.Password_hash) newErrors.Password_hash = 'Password is required';
+    if (!formData.Job_role) newErrors.Job_role = 'Please select account type';
+    if (!formData.Email) {
+      newErrors.Email = 'Email is required';
+    } else {
+      const emailRegex = /^\S+@\S+\.[\w-]{2,}$/;
+      if (!emailRegex.test(formData.Email)) newErrors.Email = 'Please enter a valid email address';
+    }
+    if (!formData.Password_hash) {
+      newErrors.Password_hash = 'Password is required';
+    } else if (formData.Password_hash.length < 6) {
+      newErrors.Password_hash = 'Password must be at least 6 characters';
+    }
     if (formData.Password_hash !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
     if (!formData.Staff_id) newErrors.Staff_id = 'Staff ID is required';
     if (formData.Job_role === 'employee' && !formData.EmployeeJobRole) newErrors.EmployeeJobRole = 'Employee Job Role is required';
     if (formData.Job_role === 'employee' && !formData.Manager_id) newErrors.Manager_id = 'Manager is required';
+    // Joining date cannot be in the future
+    if (formData.Joining_date) {
+      try {
+        const chosen = new Date(formData.Joining_date);
+        const today = new Date(todayStr);
+        if (chosen > today) newErrors.Joining_date = 'Joining date cannot be in the future';
+      } catch {}
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -102,7 +124,35 @@ const SignUp = () => {
       navigate('/login');
     }
   } else {
-    toast.error(result.error);
+    let message = result.error || 'Registration failed';
+    const lowerRaw = String(message).toLowerCase();
+    // Detect specific duplicate scenarios conservatively
+    const emailDup = lowerRaw.includes('email') && (lowerRaw.includes('already') || lowerRaw.includes('exists') || lowerRaw.includes('duplicate') || lowerRaw.includes('unique'));
+    const staffDup = (lowerRaw.includes('staff') || lowerRaw.includes('staff_id') || lowerRaw.includes('staff id')) && (lowerRaw.includes('already') || lowerRaw.includes('exists') || lowerRaw.includes('duplicate') || lowerRaw.includes('unique'));
+
+    // Prepare field-mapped errors
+    const mapped = {};
+    if (emailDup) {
+      mapped.Email = 'Email already exists';
+    }
+    if (staffDup) {
+      mapped.Staff_id = 'Staff ID already exists';
+    }
+    if (lowerRaw.includes('password')) {
+      mapped.Password_hash = message;
+    }
+    if (lowerRaw.includes('confirm') || lowerRaw.includes('match')) {
+      mapped.confirmPassword = message;
+    }
+
+    // Decide what to show globally
+    const hasFieldError = Object.keys(mapped).length > 0;
+    if (!hasFieldError) {
+      mapped.global = message;
+      toast.error(message);
+    }
+
+    setErrors(mapped);
   }
 };
 
@@ -145,14 +195,57 @@ const SignUp = () => {
                   <UserCheck className="w-4 h-4 mr-2" /> Manager
                 </Button>
               </div>
+              {errors.Job_role && <p className="text-red-500" style={{ marginTop: 6 }}>{errors.Job_role}</p>}
             </div>
 
             <form onSubmit={handleSubmit} className="login-form">
               <Input label="First Name" name="First_name" value={formData.First_name} onChange={handleChange} error={errors.First_name} required />
               <Input label="Last Name" name="Last_name" value={formData.Last_name} onChange={handleChange} error={errors.Last_name} required />
               <Input label="Email" type="email" name="Email" value={formData.Email} onChange={handleChange} error={errors.Email} required />
-              <Input label="Password" type="password" name="Password_hash" value={formData.Password_hash} onChange={handleChange} error={errors.Password_hash} required />
-              <Input label="Confirm Password" type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} error={errors.confirmPassword} required />
+
+              <div style={{ position: 'relative' }}>
+                <Input
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  name="Password_hash"
+                  value={formData.Password_hash}
+                  onChange={handleChange}
+                  error={errors.Password_hash}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  style={{ position: 'absolute', right: 10, top: 34, background: 'transparent', border: 'none', padding: 4, cursor: 'pointer' }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+
+              <div style={{ position: 'relative' }}>
+                <Input
+                  label="Confirm Password"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  error={errors.confirmPassword}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((s) => !s)}
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  style={{ position: 'absolute', right: 10, top: 34, background: 'transparent', border: 'none', padding: 4, cursor: 'pointer' }}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+
+              {errors.global && !errors.Email && !errors.Staff_id && !errors.Password_hash && !errors.confirmPassword && !errors.Job_role && (
+                <p style={{ color: 'var(--danger-500)', marginTop: 8 }}>{errors.global}</p>
+              )}
               <Input label="Staff ID" type="number" name="Staff_id" value={formData.Staff_id} onChange={handleChange} error={errors.Staff_id} required />
 
               {formData.Job_role === 'employee' && (
@@ -166,10 +259,10 @@ const SignUp = () => {
                   </select>
                   {errors.EmployeeJobRole && <p className="text-red-500">{errors.EmployeeJobRole}</p>}
 
-                  <Input label="Joining Date" type="date" name="Joining_date" value={formData.Joining_date} onChange={handleChange} />
+                  <Input label="Joining Date" type="date" name="Joining_date" value={formData.Joining_date} onChange={handleChange} error={errors.Joining_date} max={todayStr} />
 
                   <label className="block mb-2 font-medium">Select Manager</label>
-                  <select name="Manager_id" value={formData.Manager_id} onChange={handleChange} className="input">
+                  <select name="Manager_id" value={formData.Manager_id} onChange={handleChange} className="input" required>
                     <option value="">Select Manager</option>
                     {managers.map(manager => (
                       <option key={manager.staff_id} value={manager.staff_id}>
@@ -193,7 +286,7 @@ const SignUp = () => {
         </Card>
 
         <div className="login-footer">
-          <p>© 2024 Project Allocation System. All rights reserved.</p>
+          <p>© 2025 Project Allocation System.</p>
         </div>
       </div>
     </div>

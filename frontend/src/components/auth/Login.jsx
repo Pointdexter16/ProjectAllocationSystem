@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
-import { Building2 } from 'lucide-react';
+import { Building2, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Login = () => {
@@ -15,6 +15,7 @@ const Login = () => {
 
   
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
   
   const { login, loading } = useAuth();
   const navigate = useNavigate();
@@ -38,15 +39,19 @@ const Login = () => {
     const newErrors = {};
     
     if (!formData.email) {
-      newErrors.email = 'Employee ID is required';
+      newErrors.email = 'Email is required';
+    } else {
+      const emailRegex = /^\S+@\S+\.[\w-]{2,}$/;
+      if (!emailRegex.test(formData.email)) {
+        newErrors.email = 'Please enter a valid email address';
+      }
     }
     
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } 
-    // else if (formData.password.length < 6) {
-    //   newErrors.password = 'Password must be at least 6 characters';
-    // }
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -66,7 +71,22 @@ const Login = () => {
     
     }
     else {
-      toast.error(result.error || 'Login failed');
+      const message = result.error || 'Login failed';
+      toast.error(message);
+      // Map common backend errors to field-specific errors
+      const lower = String(message).toLowerCase();
+      const mapped = {};
+      if (lower.includes('password')) {
+        mapped.password = message;
+      }
+      if (lower.includes('user not found') || lower.includes('email') || lower.includes('user')) {
+        mapped.email = message;
+      }
+      // Only show a global error if it wasn't mapped to a field
+      if (!mapped.password && !mapped.email) {
+        mapped.global = message;
+      }
+      setErrors(mapped);
     }
   };
 
@@ -94,26 +114,48 @@ const Login = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="login-form">
               <Input
-                label="email"
-                type="text"
+                label="Email"
+                type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 error={errors.email}
                 required
-                placeholder="Enter your employee ID"
+                placeholder="you@example.com"
               />
               
-              <Input
-                label="Password"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                error={errors.password}
-                required
-                placeholder="Enter your password"
-              />
+              <div style={{ position: 'relative' }}>
+                <Input
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  error={errors.password}
+                  required
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  style={{
+                    position: 'absolute',
+                    right: 10,
+                    top: 34,
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 4,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+
+              {errors.global && !errors.email && !errors.password && (
+                <p style={{ color: 'var(--danger-500)', marginTop: 8 }}>{errors.global}</p>
+              )}
               
               <Button
                 type="submit"

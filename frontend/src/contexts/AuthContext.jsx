@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed';
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || 'Login failed';
       dispatch({ type: 'LOGIN_FAILURE', payload: errorMessage });
       return { success: false, error: errorMessage };
     }
@@ -144,9 +144,18 @@ export const AuthProvider = ({ children }) => {
 
     return { success: true };
   } catch (error) {
-    const errorMessage = error.response?.data?.message || 'Registration failed';
-    dispatch({ type: 'REGISTER_FAILURE', payload: errorMessage });
-    return { success: false, error: errorMessage };
+    const raw = error.response?.data?.detail || error.response?.data?.message || 'Registration failed';
+    let friendly = typeof raw === 'string' ? raw : 'Registration failed';
+    const lower = String(friendly).toLowerCase();
+    // Friendly mapping for common duplicate cases
+    const emailDup = lower.includes('email') && (lower.includes('already') || lower.includes('exists') || lower.includes('duplicate') || lower.includes('unique'));
+    const staffDup = (lower.includes('staff') || lower.includes('staff_id') || lower.includes('staff id')) && (lower.includes('already') || lower.includes('exists') || lower.includes('duplicate') || lower.includes('unique'));
+    if (emailDup) friendly = 'Email already exists';
+    if (staffDup) friendly = staffDup ? 'Staff ID already exists' : friendly;
+    // Collapse extremely long messages to a generic one
+    if (friendly.length > 300) friendly = 'Registration failed';
+    dispatch({ type: 'REGISTER_FAILURE', payload: friendly });
+    return { success: false, error: friendly };
   }
 };
 

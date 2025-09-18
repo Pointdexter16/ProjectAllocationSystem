@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useEmployees } from '../../contexts/EmployeeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import '../../styles/employees.css';
 import { 
   Users, 
@@ -24,6 +26,8 @@ import Select from '../ui/Select';
 
 const EmployeesManagement = () => {
   const { employees, addEmployee, updateEmployee, deleteEmployee, setEmployees } = useEmployees();
+  const { user } = useAuth();
+  const managerId = user?.Staff_id;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,24 +57,53 @@ const EmployeesManagement = () => {
 
   useEffect(() => {
     const fetchEmployees = async () => {
+      if (!managerId) return; // wait until auth is ready
       setLoading(true);
       setError(null);
       try {
-        // Use searchTerm as job title for backend search
-        const jobTitle = searchTerm.trim() || "all";
-        const endpoint = jobTitle === "all"
-          ? "http://localhost:8000/admin/Employees/all"
-          : `http://localhost:8000/admin/Employees/${encodeURIComponent(jobTitle)}`;
-        const response = await window.axios.get(endpoint);
-        setEmployees(response.data.employees || response.data);
+        // Fetch employees under this manager only
+        const endpoint = `http://localhost:8000/admin/employees/manager/${managerId}`;
+        const response = await axios.get(endpoint);
+        const raw = response.data?.employees ?? [];
+        // Normalize to frontend minimal shape based on available backend fields
+        const baseNormalized = (Array.isArray(raw) ? raw : []).map((e) => ({
+          id: e.Staff_id,
+          name: `${e.First_name ?? ''} ${e.Last_name ?? ''}`.trim(),
+          email: e.Email ?? '',
+          role: e.Job_title ?? 'Employee',
+          status: (e.EmployeeStatus ?? 'active').toLowerCase(),
+          avatar: `${(e.First_name || 'U')[0] ?? 'U'}${(e.Last_name || '')[0] ?? ''}`.toUpperCase(),
+          managerId: e.Manager_id ?? null,
+        }));
+        // Fetch projects for each employee in parallel and attach
+        const projResults = await Promise.all(
+          baseNormalized.map((emp) =>
+            axios
+              .get(`http://localhost:8000/user/project/${emp.id}`)
+              .then((res) => ({ id: emp.id, projects: res.data?.projects ?? [] }))
+              .catch(() => ({ id: emp.id, projects: [] }))
+          )
+        );
+        const projMap = {};
+        projResults.forEach(({ id, projects }) => {
+          projMap[id] = (projects || []).map((p) => ({
+            id: p.ProjectId ?? p.project_id ?? p.id,
+            name: p.ProjectName ?? p.project_name ?? p.name ?? 'Project',
+          }));
+        });
+        const normalized = baseNormalized.map((emp) => ({
+          ...emp,
+          currentProjects: projMap[emp.id] ?? [],
+        }));
+        setEmployees(normalized);
       } catch (err) {
-        setError("Failed to fetch employees");
+        setError('Failed to fetch employees');
       } finally {
         setLoading(false);
       }
     };
     fetchEmployees();
-  }, [searchTerm, setEmployees]);
+  }, [managerId, setEmployees]);
 
   const getStatusBadge = (status) => {
     switch (status.toLowerCase()) {
@@ -212,17 +245,11 @@ const EmployeesManagement = () => {
   };
 
   const filteredEmployees = employees.filter(employee => {
-    const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         employee.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         employee.department.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
+    const matchesSearch = (employee.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (employee.role || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (employee.email || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
-    
-    const availabilityStatus = getAvailabilityStatus(employee.capacity.utilizationRate);
-    const matchesAvailability = availabilityFilter === 'all' || availabilityStatus === availabilityFilter;
-    
-    return matchesSearch && matchesDepartment && matchesStatus && matchesAvailability;
+    return matchesSearch && matchesStatus;
   });
 
   const handleViewEmployee = (employee) => {
@@ -240,10 +267,11 @@ const EmployeesManagement = () => {
           <h1 className="page-title">Employee Management</h1>
           <p className="page-description">Manage team members and their project assignments</p>
         </div>
-        <Button onClick={handleCreateEmployee}>
+        {/* Backend-managed data only: hide manual Add Employee to avoid mismatch */}
+        {/* <Button onClick={handleCreateEmployee}>
           <Plus style={{ width: '16px', height: '16px', marginRight: '8px' }} />
           Add Employee
-        </Button>
+        </Button> */}
       </div>
 
       {/* Stats Cards */}
@@ -334,7 +362,6 @@ const EmployeesManagement = () => {
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
-                <option value="on-leave">On Leave</option>
                 <option value="inactive">Inactive</option>
               </Select>
               {/* <Select
@@ -359,7 +386,7 @@ const EmployeesManagement = () => {
             <CardContent>
               <div className="employee-card-header">
                 <div className="employee-basic-info">
-                  <div className="employee-avatar" style={{ backgroundColor: getDepartmentColor(employee.department) }}>
+                  <div className="employee-avatar" style={{ backgroundColor: 'var(--primary-600)' }}>
                     {employee.avatar}
                   </div>
                   <div className="employee-info">
@@ -369,15 +396,11 @@ const EmployeesManagement = () => {
                       <Badge variant={getStatusBadge(employee.status)}>
                         {employee.status.replace('-', ' ')}
                       </Badge>
-                      {/* <Badge variant="secondary">{employee.department}</Badge> */}
+                      {/* Only fields from backend shown */}
                     </div>
                   </div>
                 </div>
-                {/* <div className="employee-actions">
-                  <Button variant="ghost" size="sm">
-                    <MoreVertical style={{ width: '16px', height: '16px' }} />
-                  </Button>
-                </div> */}
+                {/* Hide per-employee actions (Edit/Delete) as no backend endpoints are wired here */}
               </div>
 
               <div className="employee-details">
@@ -386,66 +409,29 @@ const EmployeesManagement = () => {
                     <Mail style={{ width: '14px', height: '14px' }} />
                     <span>{employee.email}</span>
                   </div>
-                  <div className="contact-item">
-                    <Phone style={{ width: '14px', height: '14px' }} />
-                    <span>{employee.phone}</span>
-                  </div>
-                  {/* <div className="contact-item">
-                    <MapPin style={{ width: '14px', height: '14px' }} />
-                    <span>{employee.location}</span>
-                  </div> */}
+                  {/* Backend does not provide phone in the listed endpoints */}
                 </div>
 
-                {/* <div className="skills-section">
-                  <h4>Skills</h4>
-                  <div className="skills-list">
-                    {employee.skills.slice(0, 3).map((skill, index) => (
-                      <span key={index} className="skill-tag">{skill}</span>
-                    ))}
-                    {employee.skills.length > 3 && (
-                      <span className="skill-tag more">+{employee.skills.length - 3}</span>
-                    )}
-                  </div>
-                </div> */}
+                {/* Hide skills section (no backend data) */}
 
-                <div className="capacity-section">
-                  <h4>Capacity & Workload</h4>
-                  <div className="capacity-info">
-                    {/* <div className="capacity-stats">
-                      <span className="capacity-label">Allocated: {employee.capacity.allocatedHours}h</span>
-                      <span className="capacity-label">Available: {employee.capacity.availableHours}h</span>
-                    </div> */}
-                    <div className="capacity-bar">
-                      <div 
-                        className="capacity-fill" 
-                        style={{ 
-                          width: `${employee.capacity.utilizationRate}%`,
-                          backgroundColor: employee.capacity.utilizationRate > 90 ? 'var(--danger-500)' : 
-                                         employee.capacity.utilizationRate > 75 ? 'var(--warning-500)' : 
-                                         'var(--success-500)'
-                        }}
-                      ></div>
+                {/* Hide capacity & workload (no backend data) */}
+
+                {/* Projects summary (show only if available) */}
+                {(employee.currentProjects && employee.currentProjects.length > 0) && (
+                  <div className="projects-section">
+                    <h4>Projects ({employee.currentProjects.length})</h4>
+                    <div className="projects-list">
+                      {employee.currentProjects.slice(0, 3).map((project) => (
+                        <div key={project.id} className="project-item">
+                          <span className="project-name">{project.name}</span>
+                        </div>
+                      ))}
+                      {employee.currentProjects.length > 3 && (
+                        <div className="project-item more">+{employee.currentProjects.length - 3} more</div>
+                      )}
                     </div>
-                    <span className="utilization-rate">{employee.capacity.utilizationRate}% utilized</span>
                   </div>
-                </div>
-
-                <div className="projects-section">
-                  <h4>Current Projects ({employee.currentProjects.length})</h4>
-                  <div className="projects-list">
-                    {employee.currentProjects.slice(0, 2).map((project) => (
-                      <div key={project.id} className="project-item">
-                        <span className="project-name">{project.name}</span>
-                        <span className="project-role">{project.role} ({project.allocatedHours}h)</span>
-                      </div>
-                    ))}
-                    {employee.currentProjects.length > 2 && (
-                      <div className="project-item more">
-                        +{employee.currentProjects.length - 2} more projects
-                      </div>
-                    )}
-                  </div>
-                </div>
+                )}
 
                 <div className="employee-card-actions">
                   <Button 
@@ -455,34 +441,7 @@ const EmployeesManagement = () => {
                   >
                     View Details
                   </Button>
-                  <div className="dropdown-container">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => toggleDropdown(employee.id)}
-                      className="dropdown-trigger"
-                    >
-                      <MoreVertical style={{ width: '16px', height: '16px' }} />
-                    </Button>
-                    {dropdownOpen === employee.id && (
-                      <div className="dropdown-menu">
-                        <button 
-                          className="dropdown-item"
-                          onClick={() => handleEditEmployee(employee)}
-                        >
-                          <Edit style={{ width: '14px', height: '14px' }} />
-                          Edit Employee
-                        </button>
-                        <button 
-                          className="dropdown-item delete"
-                          onClick={() => handleDeleteEmployee(employee)}
-                        >
-                          <Trash2 style={{ width: '14px', height: '14px' }} />
-                          Delete Employee
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  {/* Hide Edit/Delete actions (no wired backend for these in scope) */}
                 </div>
               </div>
             </CardContent>
@@ -500,7 +459,7 @@ const EmployeesManagement = () => {
         {selectedEmployee && (
           <div className="employee-modal-content">
             <div className="employee-modal-header">
-              <div className="employee-avatar large" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }}>
+              <div className="employee-avatar large" style={{ backgroundColor: 'var(--primary-600)' }}>
                 {selectedEmployee.avatar}
               </div>
               <div className="employee-modal-info">
@@ -510,7 +469,7 @@ const EmployeesManagement = () => {
                   <Badge variant={getStatusBadge(selectedEmployee.status)}>
                     {selectedEmployee.status.replace('-', ' ')}
                   </Badge>
-                  <Badge variant="secondary">{selectedEmployee.department}</Badge>
+                  {/* No department in backend payload */}
                 </div>
               </div>
             </div>
@@ -523,41 +482,13 @@ const EmployeesManagement = () => {
                     <Mail style={{ width: '16px', height: '16px' }} />
                     <span>{selectedEmployee.email}</span>
                   </div>
-                  <div className="detail-item">
-                    <Phone style={{ width: '16px', height: '16px' }} />
-                    <span>{selectedEmployee.phone}</span>
-                  </div>
-                  <div className="detail-item">
-                    <MapPin style={{ width: '16px', height: '16px' }} />
-                    <span>{selectedEmployee.location}</span>
-                  </div>
-                  <div className="detail-item">
-                    <Calendar style={{ width: '16px', height: '16px' }} />
-                    <span>Joined: {new Date(selectedEmployee.joinDate).toLocaleDateString()}</span>
-                  </div>
+                  {/* Hide phone/location/join date (not in backend response) */}
                 </div>
               </div>
 
-              <div className="detail-section">
-                <h3>Skills & Expertise</h3>
-                <div className="skills-grid">
-                  {selectedEmployee.skills.map((skill, index) => (
-                    <span key={index} className="skill-tag large">{skill}</span>
-                  ))}
-                </div>
-              </div>
+              {/* Hide skills section */}
 
-              <div className="detail-section">
-                <h3>Current Projects</h3>
-                <div className="projects-detailed">
-                  {selectedEmployee.currentProjects.map((project) => (
-                    <div key={project.id} className="project-detailed">
-                      <h4>{project.name}</h4>
-                      <p>{project.role}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {/* Hide projects detailed section */}
             </div>
           </div>
         )}

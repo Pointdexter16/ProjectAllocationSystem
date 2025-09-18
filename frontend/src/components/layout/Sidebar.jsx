@@ -11,7 +11,8 @@ import {
   LogOut,
   Building2,
   CheckSquare,
-  Clock
+  Clock,
+  User as UserIcon
 } from 'lucide-react';
 import Button from '../ui/Button';
 
@@ -35,16 +36,15 @@ const Sidebar = ({ isOpen, onClose }) => {
     // { icon: Settings, label: 'Settings', path: '/settings' }
   ];
 
+  // For employees, only show Dashboard as requested
   const employeeNavItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: CheckSquare, label: 'Employees', path: '/my-tasks' },
-    { icon: FolderOpen, label: 'Projects', path: '/my-projects' },
-    // { icon: Calendar, label: 'Schedule', path: '/schedule' },
-    // { icon: Clock, label: 'Timesheet', path: '/timesheet' },
-    // { icon: Settings, label: 'Profile', path: '/profile' }
   ];
 
-  const navItems = user?.role === 'admin' ? adminNavItems : employeeNavItems;
+  // Use Job_role from auth user to determine role (case-insensitive)
+  const role = (user?.Job_role || '').toString().toLowerCase();
+  // Show full admin menu for any non-employee role (e.g., 'manager', 'admin')
+  const navItems = role !== 'employee' ? adminNavItems : employeeNavItems;
 
   return (
     <>
@@ -94,18 +94,28 @@ const Sidebar = ({ isOpen, onClose }) => {
             <div className="sidebar-user-info">
               <div className="sidebar-user-avatar">
                 <span>
-                  {user?.name?.charAt(0) || 'U'}
+                  {(user?.First_name?.[0] || 'U').toUpperCase()}
                 </span>
               </div>
               <div className="sidebar-user-details">
                 <p className="sidebar-user-name">
-                  {user?.name}
+                  {user?.First_name} {user?.Last_name}
                 </p>
                 <p className="sidebar-user-role">
-                  {user?.role}
+                  {user?.Job_role}
                 </p>
               </div>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/profile')}
+              className="w-full"
+              style={{ justifyContent: 'flex-start', marginBottom: 8 }}
+            >
+              <UserIcon style={{ width: '16px', height: '16px', marginRight: '8px' }} />
+              My Profile
+            </Button>
             <Button
               variant="outline"
               size="sm"

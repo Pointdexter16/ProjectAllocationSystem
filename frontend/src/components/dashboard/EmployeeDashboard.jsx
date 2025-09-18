@@ -20,57 +20,51 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 const EmployeeDashboard = () => {
   const { user } = useAuth();
   
-  const [stats, setStats] = useState({
-    tasksCompleted: 28,
-    tasksInProgress: 5,
-    tasksPending: 12,
-    hoursWorked: 32,
-    weeklyCapacity: 40,
-    utilizationRate: 80
-  });
+  // Derived stats from backend projects
+  // const [stats, setStats] = useState({});
 
-  const [myTasks, setMyTasks] = useState([
-    {
-      id: 1,
-      title: 'Implement user authentication',
-      project: 'E-commerce Platform',
-      status: 'in-progress',
-      priority: 'high',
-      dueDate: '2024-01-25',
-      estimatedHours: 8,
-      completedHours: 5
-    },
-    {
-      id: 2,
-      title: 'Design product catalog UI',
-      project: 'E-commerce Platform',
-      status: 'pending',
-      priority: 'medium',
-      dueDate: '2024-01-28',
-      estimatedHours: 12,
-      completedHours: 0
-    },
-    {
-      id: 3,
-      title: 'Fix payment gateway integration',
-      project: 'Mobile App Redesign',
-      status: 'in-progress',
-      priority: 'high',
-      dueDate: '2024-01-24',
-      estimatedHours: 6,
-      completedHours: 3
-    },
-    {
-      id: 4,
-      title: 'Write unit tests for API',
-      project: 'Data Analytics Dashboard',
-      status: 'completed',
-      priority: 'medium',
-      dueDate: '2024-01-20',
-      estimatedHours: 4,
-      completedHours: 4
-    }
-  ]);
+  // const [myTasks, setMyTasks] = useState([
+  //   {
+  //     id: 1,
+  //     title: 'Implement user authentication',
+  //     project: 'E-commerce Platform',
+  //     status: 'in-progress',
+  //     priority: 'high',
+  //     dueDate: '2024-01-25',
+  //     estimatedHours: 8,
+  //     completedHours: 5
+  //   },
+  //   {
+  //     id: 2,
+  //     title: 'Design product catalog UI',
+  //     project: 'E-commerce Platform',
+  //     status: 'pending',
+  //     priority: 'medium',
+  //     dueDate: '2024-01-28',
+  //     estimatedHours: 12,
+  //     completedHours: 0
+  //   },
+  //   {
+  //     id: 3,
+  //     title: 'Fix payment gateway integration',
+  //     project: 'Mobile App Redesign',
+  //     status: 'in-progress',
+  //     priority: 'high',
+  //     dueDate: '2024-01-24',
+  //     estimatedHours: 6,
+  //     completedHours: 3
+  //   },
+  //   {
+  //     id: 4,
+  //     title: 'Write unit tests for API',
+  //     project: 'Data Analytics Dashboard',
+  //     status: 'completed',
+  //     priority: 'medium',
+  //     dueDate: '2024-01-20',
+  //     estimatedHours: 4,
+  //     completedHours: 4
+  //   }
+  // ]);
 
   const [myProjects, setMyProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
@@ -81,20 +75,31 @@ const EmployeeDashboard = () => {
       setLoadingProjects(true);
       setErrorProjects(null);
       try {
-        const response = await axios.get('http://localhost:8000/admin/employee/projects', {
-          params: { employeeId: user?.id },
-        });
-        setMyProjects(response.data.projects || []);
+        const employeeId = user?.Staff_id;
+        if (!employeeId) {
+          setMyProjects([]);
+          return;
+        }
+        const response = await axios.get(`http://localhost:8000/user/project/${employeeId}`);
+        const projects = Array.isArray(response.data?.projects) ? response.data.projects : [];
+        const normalized = projects.map((p) => ({
+          id: p.project_id ?? p.ProjectId ?? p.id,
+          name: p.project_name ?? p.ProjectName ?? 'Project',
+          status: p.status ?? p.Project_status ?? 'In Progress',
+          progress: (p.status ?? p.Project_status) === 'Completed' ? 100 : 0,
+          completedTasks: 0,
+          tasksCount: 0,
+          role: '',
+        }));
+        setMyProjects(normalized);
       } catch (err) {
-        setErrorProjects('Failed to fetch projects');
+        setErrorProjects(err?.response?.data?.detail || 'Failed to fetch projects');
       } finally {
         setLoadingProjects(false);
       }
     };
-    if (user?.id) {
-      fetchProjects();
-    }
-  }, [user?.id]);
+    fetchProjects();
+  }, [user?.Staff_id]);
 
   // Function to add a new project (POST to backend)
   const addProject = async (newProject) => {
@@ -111,21 +116,37 @@ const EmployeeDashboard = () => {
     }
   };
 
-  const weeklyHours = [
-    { day: 'Mon', hours: 8 },
-    { day: 'Tue', hours: 7.5 },
-    { day: 'Wed', hours: 8 },
-    { day: 'Thu', hours: 6 },
-    { day: 'Fri', hours: 2.5 },
-    { day: 'Sat', hours: 0 },
-    { day: 'Sun', hours: 0 }
+  // Compute project status distribution for pie chart
+  const normalizeStatus = (s = '') => {
+    const v = String(s).toLowerCase();
+    if (v.includes('complete')) return 'Completed';
+    if (v.includes('progress') || v.includes('active') || v.includes('ongoing')) return 'In Progress';
+    if (v.includes('pending') || v.includes('plan') || v.includes('assign')) return 'Pending';
+    return 'Other';
+  };
+  const totalProjects = myProjects.length;
+  const activeProjects = myProjects.filter(p => normalizeStatus(p.status) !== 'Completed').length;
+  const dist = myProjects.reduce((acc, p) => {
+    const k = normalizeStatus(p.status);
+    acc[k] = (acc[k] || 0) + 1;
+    return acc;
+  }, {});
+  const pieData = [
+    { name: 'Completed', value: dist['Completed'] || 0, color: '#22c55e' },
+    { name: 'In Progress', value: dist['In Progress'] || 0, color: '#3b82f6' },
+    { name: 'Pending', value: dist['Pending'] || 0, color: '#f59e0b' },
   ];
 
-  const taskStatusData = [
-    { name: 'Completed', value: stats.tasksCompleted, color: '#22c55e' },
-    { name: 'In Progress', value: stats.tasksInProgress, color: '#3b82f6' },
-    { name: 'Pending', value: stats.tasksPending, color: '#f59e0b' }
-  ];
+  // Project list filter state
+  const [projectFilter, setProjectFilter] = useState('All');
+  const statusForFilter = (s) => {
+    const n = normalizeStatus(s);
+    return n === 'Pending' ? 'Not Started' : n; // rename Pending -> Not Started for UI filter
+  };
+  const displayedProjects = myProjects.filter((p) => {
+    if (projectFilter === 'All') return true;
+    return statusForFilter(p.status) === projectFilter;
+  });
 
   const getStatusBadge = (status) => {
     const variants = {
@@ -169,7 +190,7 @@ const EmployeeDashboard = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user?.name}!</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user?.First_name} {user?.Last_name}!</h1>
           <p className="text-gray-600">Here's your work overview and upcoming tasks</p>
         </div>
         {/* <div className="flex space-x-3">
@@ -184,64 +205,17 @@ const EmployeeDashboard = () => {
         </div> */}
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Top Cards: Total Projects, Active Projects */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Tasks Completed</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.tasksCompleted}</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-full">
-                <CheckSquare className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center">
-              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-              <span className="text-sm text-green-600">+3 this week</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">In Progress</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.tasksInProgress}</p>
+                <p className="text-sm font-medium text-gray-600">Total Projects</p>
+                <p className="text-2xl font-bold text-gray-900">{totalProjects}</p>
               </div>
               <div className="bg-blue-100 p-3 rounded-full">
-                <Play className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center">
-              <span className="text-sm text-gray-600">{stats.tasksPending} pending</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Hours This Week</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.hoursWorked}</p>
-              </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <Clock className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="flex justify-between text-sm mb-1">
-                <span>of {stats.weeklyCapacity}h capacity</span>
-                <span>{stats.weeklyCapacity - stats.hoursWorked}h remaining</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-purple-600 h-2 rounded-full" 
-                  style={{ width: `${(stats.hoursWorked / stats.weeklyCapacity) * 100}%` }}
-                ></div>
+                <FolderOpen className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -252,38 +226,18 @@ const EmployeeDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Projects</p>
-                <p className="text-2xl font-bold text-gray-900">{myProjects.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{activeProjects}</p>
               </div>
-              <div className="bg-orange-100 p-3 rounded-full">
-                <FolderOpen className="h-6 w-6 text-orange-600" />
+              <div className="bg-green-100 p-3 rounded-full">
+                <CheckSquare className="h-6 w-6 text-green-600" />
               </div>
-            </div>
-            <div className="mt-4 flex items-center">
-              <span className="text-sm text-gray-600">Across {myProjects.length} teams</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Weekly Hours Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={weeklyHours}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="hours" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
+      {/* Project Status Distribution */}
+      <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Task Distribution</CardTitle>
@@ -292,7 +246,7 @@ const EmployeeDashboard = () => {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={taskStatusData}
+                  data={pieData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -301,7 +255,7 @@ const EmployeeDashboard = () => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {taskStatusData.map((entry, index) => (
+                  {pieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -312,81 +266,37 @@ const EmployeeDashboard = () => {
         </Card>
       </div>
 
-      {/* Tasks and Projects */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Projects List */}
+      <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>My Tasks</CardTitle>
-              <Button variant="outline" size="sm">View All</Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {myTasks.slice(0, 4).map((task) => (
-                <div key={task.id} className="flex items-start space-x-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="mt-1">
-                    {getStatusIcon(task.status)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-gray-900 truncate">{task.title}</h4>
-                      <div className="flex space-x-2">
-                        <Badge variant={getStatusBadge(task.status)}>
-                          {task.status.replace('-', ' ')}
-                        </Badge>
-                        <Badge variant={getPriorityBadge(task.priority)}>
-                          {task.priority}
-                        </Badge>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">{task.project}</p>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
-                      <span>{task.completedHours}h / {task.estimatedHours}h</span>
-                    </div>
-                    {task.status === 'in-progress' && (
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div 
-                            className="bg-blue-600 h-1.5 rounded-full" 
-                            style={{ width: `${(task.completedHours / task.estimatedHours) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    )}
-                    {task.status === 'pending' && (
-                      <div className="mt-2 flex space-x-2">
-                        <Button 
-                          size="sm" 
-                          onClick={() => updateTaskStatus(task.id, 'in-progress')}
-                        >
-                          Start Task
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between gap-3">
               <CardTitle>My Projects</CardTitle>
-              <Button variant="outline" size="sm">View Details</Button>
+              <div className="ml-auto flex items-center gap-2">
+                <label className="text-sm text-gray-600">Select</label>
+                <select
+                  className="input"
+                  value={projectFilter}
+                  onChange={(e) => setProjectFilter(e.target.value)}
+                >
+                  <option value="All">All</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Not Started">Not Started</option>
+                  <option value="Completed">Completed</option>
+                </select>
+                {loadingProjects && <Badge>Loading...</Badge>}
+                {errorProjects && <Badge variant="danger">{errorProjects}</Badge>}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {myProjects.map((project) => (
+              {displayedProjects.map((project) => (
                 <div key={project.id} className="p-4 border rounded-lg">
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h4 className="font-medium text-gray-900">{project.name}</h4>
-                      <p className="text-sm text-gray-600">{project.role}</p>
+                      <p className="text-sm text-gray-600">Status: {statusForFilter(project.status)}</p>
                     </div>
                     <span className="text-sm font-medium text-gray-900">{project.progress}%</span>
                   </div>
@@ -398,73 +308,18 @@ const EmployeeDashboard = () => {
                       ></div>
                     </div>
                   </div>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>{project.completedTasks} / {project.tasksCount} tasks completed</span>
-                    <span>{project.tasksCount - project.completedTasks} remaining</span>
-                  </div>
+                  {/* You can add more project details here if API provides */}
                 </div>
               ))}
+              {!loadingProjects && displayedProjects.length === 0 && (
+                <p className="text-sm text-gray-600">No projects assigned.</p>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Upcoming Deadlines */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Upcoming Deadlines</CardTitle>
-            {/* <Button variant="outline" size="sm">
-              <Calendar className="h-4 w-4 mr-2" />
-              Calendar View
-            </Button> */}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {myTasks
-              .filter(task => task.status !== 'completed')
-              .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
-              .slice(0, 5)
-              .map((task) => {
-                const daysUntilDue = Math.ceil((new Date(task.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
-                const isOverdue = daysUntilDue < 0;
-                const isUrgent = daysUntilDue <= 2 && daysUntilDue >= 0;
-                
-                return (
-                  <div key={task.id} className={`flex items-center justify-between p-3 rounded-lg border ${
-                    isOverdue ? 'bg-red-50 border-red-200' : 
-                    isUrgent ? 'bg-orange-50 border-orange-200' : 
-                    'bg-gray-50 border-gray-200'
-                  }`}>
-                    <div className="flex items-center space-x-3">
-                      {(isOverdue || isUrgent) && (
-                        <AlertCircle className={`h-4 w-4 ${isOverdue ? 'text-red-500' : 'text-orange-500'}`} />
-                      )}
-                      <div>
-                        <p className="font-medium text-gray-900">{task.title}</p>
-                        <p className="text-sm text-gray-600">{task.project}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={`text-sm font-medium ${
-                        isOverdue ? 'text-red-600' : 
-                        isUrgent ? 'text-orange-600' : 
-                        'text-gray-900'
-                      }`}>
-                        {isOverdue ? `${Math.abs(daysUntilDue)} days overdue` :
-                         daysUntilDue === 0 ? 'Due today' :
-                         daysUntilDue === 1 ? 'Due tomorrow' :
-                         `Due in ${daysUntilDue} days`}
-                      </p>
-                      <p className="text-xs text-gray-500">{new Date(task.dueDate).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </CardContent>
-      </Card>
+      
     </div>
   );
 };

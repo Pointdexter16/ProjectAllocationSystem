@@ -44,6 +44,14 @@ const ProjectsManagement = () => {
         const rawProjects = response.data.projects || [];
         const normalizedProjects = rawProjects.map(project => {
           console.log('Raw project:', project);
+          // Map backend 'members' to frontend 'employees' for persistence
+          const mappedEmployees = Array.isArray(project.members)
+            ? project.members.map((m) => ({
+                id: m.Staff_id ?? m.staff_id ?? m.id,
+                name: m.EmployeeName ?? m.employeeName ?? '',
+              }))
+            : (project.employees ?? project.TeamMembers ?? []);
+
           return {
             id: project.id ?? project.ProjectId ?? project.ProjectID ?? project.project_id,
             name: project.name ?? project.ProjectName ?? '',
@@ -55,7 +63,7 @@ const ProjectsManagement = () => {
             progress: project.progress ?? project.Progress ?? 0,
             budget: project.budget ?? project.Budget ?? 0,
             manager: project.manager ?? project.Manager ?? '',
-            employees: project.employees ?? project.TeamMembers ?? [],
+            employees: mappedEmployees,
           };
         });
         console.log('Normalized projects:', normalizedProjects);
@@ -81,8 +89,20 @@ const ProjectsManagement = () => {
     const fetchEmployees = async () => {
       try {
         const response = await axios.get(`http://localhost:8000/admin/employees/manager/${managerId}`);
-        setEmployees(response.data.employees || []);
-        console.log('Fetched employees:', response.data.employees);
+        const raw = response.data.employees || [];
+        // Normalize employee shape from backend -> frontend expected fields
+        const normalized = raw.map((e) => ({
+          id: e.Staff_id,
+          name: `${e.First_name ?? ''} ${e.Last_name ?? ''}`.trim(),
+          role: e.Job_title || 'Employee',
+          department: e.Department || 'General',
+          avatar: `${(e.First_name || 'U')[0] ?? 'U'}${(e.Last_name || '')[0] ?? ''}`.toUpperCase(),
+          status: (e.EmployeeStatus || 'active').toLowerCase(),
+          capacity: { totalHours: 40, allocatedHours: 0, availableHours: 40, utilizationRate: 0 },
+          currentProjects: []
+        }));
+        setEmployees(normalized);
+        console.log('Fetched employees (normalized):', normalized);
       } catch (err) {
         console.error('Error fetching employees:', err);
       }
@@ -399,40 +419,74 @@ const ProjectsManagement = () => {
     );
   };
 
-  const handleSaveAssignment = () => {
-    if (selectedProject) {
-      const previousEmployees = selectedProject.employees || [];
-      const newEmployees = employees.filter(emp => selectedEmployees.includes(emp.id));
-      
-      // Calculate hours to allocate (default 20 hours per employee for this project)
+  const handleSaveAssignment = async () => {
+    if (!selectedProject) return;
+
+    const previousEmployees = selectedProject.employees || [];
+    const previousIds = previousEmployees.map((e) => e.id ?? e.Staff_id);
+    const toAdd = selectedEmployees.filter((id) => !previousIds.includes(id));
+    const toRemove = previousIds.filter((id) => !selectedEmployees.includes(id));
+
+    // Prepare payload helpers per backend schema
+    const mapStatus = (s) => {
+      const val = (s || '').toLowerCase();
+      if (val === 'in progress') return 'In Progress';
+      if (val === 'completed') return 'Completed';
+      return 'Not Started';
+    };
+
+    const projectId = selectedProject.id ?? selectedProject.ProjectId;
+    const startISO = selectedProject.startDate ? new Date(selectedProject.startDate).toISOString() : new Date().toISOString();
+    const endISO = selectedProject.endDate ? new Date(selectedProject.endDate).toISOString() : new Date().toISOString();
+    const projStatus = mapStatus(selectedProject.status);
+
+    try {
+      // Call backend for additions
+      const addPromises = toAdd.map((staffId) =>
+        axios.post('http://localhost:8000/admin/member', {
+          ProjectId: projectId,
+          Staff_id: staffId,
+          StartDate: startISO,
+          EndDate: endISO,
+          Project_status: projStatus,
+        })
+      );
+
+      // Call backend for removals
+      const removePromises = toRemove.map((staffId) =>
+        axios.delete(`http://localhost:8000/admin/member/${projectId}/${staffId}`)
+      );
+
+      await Promise.all([...addPromises, ...removePromises]);
+
+      // Update capacities locally
       const defaultHoursPerProject = 20;
-
-      // Remove assignments for employees no longer selected
-      previousEmployees.forEach(prevEmp => {
-        if (!selectedEmployees.includes(prevEmp.id)) {
-          updateEmployeeCapacity(prevEmp.id, selectedProject.id, defaultHoursPerProject, false);
+      previousEmployees.forEach((prevEmp) => {
+        if (toRemove.includes(prevEmp.id)) {
+          updateEmployeeCapacity(prevEmp.id, projectId, defaultHoursPerProject, false);
         }
       });
-
-      // Add assignments for newly selected employees
-      newEmployees.forEach(newEmp => {
-        const wasAlreadyAssigned = previousEmployees.some(prevEmp => prevEmp.id === newEmp.id);
-        if (!wasAlreadyAssigned) {
-          updateEmployeeCapacity(newEmp.id, selectedProject.id, defaultHoursPerProject, true);
-        }
+      toAdd.forEach((empId) => {
+        updateEmployeeCapacity(empId, projectId, defaultHoursPerProject, true);
       });
 
-      const updatedProjects = projects.map(project => {
-        if (project.id === selectedProject.id) {
-          return { ...project, employees: newEmployees };
-        }
-        return project;
-      });
-      
+      // Update local project employees list based on latest selection
+      const newEmployees = employees.filter((emp) => selectedEmployees.includes(emp.id));
+      const updatedProjects = projects.map((project) =>
+        (project.id === projectId ? { ...project, employees: newEmployees } : project)
+      );
       setProjects(updatedProjects);
+
+      setSuccessMessage('Team assignment updated successfully');
+      setShowSuccessPopup(true);
+      setTimeout(() => setShowSuccessPopup(false), 2000);
+
       setShowAssignModal(false);
       setSelectedProject(null);
       setSelectedEmployees([]);
+    } catch (err) {
+      console.error('Failed to update team assignment:', err);
+      alert('Failed to update team assignment: ' + (err.response?.data?.detail || err.message));
     }
   };
 
@@ -608,16 +662,16 @@ const ProjectsManagement = () => {
                 className="search-input"
               />
             </div>
-            {/* <div className="filter-controls">
+            <div className="filter-controls">
               <Select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
                 <option value="all">All Status</option>
-                <option value="planning">Planning</option>
+                <option value="not started">Not Started</option>
                 <option value="in progress">In Progress</option>
                 <option value="completed">Completed</option>
-                <option value="on hold">On Hold</option>
+             
               </Select>
               <Select
                 value={priorityFilter}
@@ -628,7 +682,7 @@ const ProjectsManagement = () => {
                 <option value="medium">Medium</option>
                 <option value="low">Low</option>
               </Select>
-            </div> */}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -1043,9 +1097,9 @@ const ProjectsManagement = () => {
                     value={editingProject.status}
                     onChange={(e) => setEditingProject({...editingProject, status: e.target.value})}
                   >
-                    <option value="Planning">Planning</option>
+                    {/* <option value="Planning">Planning</option> */}
                     <option value="In Progress">In Progress</option>
-                    <option value="On Hold">On Hold</option>
+                    {/* <option value="On Hold">On Hold</option> */}
                     <option value="Completed">Completed</option>
                   </Select>
                 </div>

@@ -53,17 +53,22 @@
 
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   gap: 24px;
 }
 
 .project-card {
   transition: all 0.2s ease;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
 .project-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-medium);
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.1);
+  border-color: var(--primary-200);
 }
 
 .project-card-header {
@@ -78,13 +83,17 @@
 
 .project-title {
   margin-bottom: 8px;
-  font-size: 18px;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: 0.2px;
 }
 
 .project-badges {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 .project-actions {
@@ -94,7 +103,12 @@
 .project-description {
   color: var(--gray-600);
   margin-bottom: 16px;
-  line-height: 1.5;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* show max 3 lines */
+  -webkit-box-orient: vertical;
+  line-clamp: 3; /* standard property for compatibility */
+  overflow: hidden;
 }
 
 .project-details {
@@ -110,11 +124,30 @@
 }
 
 .meta-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  color: var(--gray-600);
+  font-size: 13px;
+  color: var(--gray-700);
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: 999px;
+  padding: 6px 10px;
+  width: fit-content;
+}
+
+/* Progress chip shown near badges */
+.progress-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--primary-50);
+  border: 1px solid var(--primary-200);
+  color: var(--primary-700);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .budget {
@@ -126,6 +159,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-top: 8px;
 }
 
 .progress-header {
@@ -156,6 +190,9 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--gray-200);
 }
 
 .team-header {

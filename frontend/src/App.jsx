@@ -9,6 +9,7 @@ import { EmployeeProvider } from './contexts/EmployeeContext';
 import './styles/globals.css';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminDashboard from './components/dashboard/AdminDashboard';
+import AdminProfile from './components/dashboard/AdminProfile';
 import EmployeeDashboard from './components/dashboard/EmployeeDashboard';
 import ProjectsManagement from './components/projects/ProjectsManagement';
 import EmployeesManagement from './components/employees/EmployeesManagement';
@@ -185,7 +186,7 @@ function App() {
 
               <Route path="profile" element={
                 <ProtectedRoute requiredRole="manager">
-                  <ProfilePage />
+                  <AdminProfile />
                 </ProtectedRoute>
               } />
               
@@ -196,6 +197,17 @@ function App() {
               } />
               <Route path="my-projects" element={
                 <ProtectedRoute requiredRole="manager">
+                  <ProjectsPage />
+                </ProtectedRoute>
+              } />
+              {/* Align sidebar links: allow both manager and admin */}
+              <Route path="employees" element={
+                <ProtectedRoute requiredRoles={["manager", "admin"]}>
+                  <EmployeesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="projects" element={
+                <ProtectedRoute requiredRoles={["manager", "admin"]}>
                   <ProjectsPage />
                 </ProtectedRoute>
               } />
